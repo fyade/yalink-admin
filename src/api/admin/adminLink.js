@@ -16,6 +16,33 @@ export function selLinkBySortId(sortId) {
 }
 
 /**
+ * 获取链接
+ * @param pageNum
+ * @param pageSize
+ * @param name
+ * @param descr
+ * @param url
+ * @param siteSearch
+ * @param sortId
+ * @returns {*}
+ */
+export function selLink({ pageNum, pageSize, name, descr, url, siteSearch, sortId }) {
+  return ax({
+    url: '/admin/link',
+    method: 'GET',
+    params: {
+      pageNum,
+      pageSize,
+      name,
+      descr,
+      url,
+      siteSearch,
+      sortId
+    }
+  })
+}
+
+/**
  * 修改链接
  * @param id
  * @param name
@@ -57,7 +84,7 @@ export function updLink({ id, name, descr, ico, url, siteSearch, orderNum, sortI
  */
 export function insLink({ name, descr, ico, url, siteSearch, orderNum, sortId }) {
   return ax({
-    url: '/admin/link/add',
+    url: '/admin/link',
     method: 'POST',
     data: {
       name,

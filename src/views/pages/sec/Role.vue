@@ -137,7 +137,7 @@ let can = () => {
   </el-dialog>
 
   <div>
-    <el-button type="primary" @click="befAdd">新增</el-button>
+    <el-button type="primary" plain @click="befAdd">新增</el-button>
   </div>
   <br/>
 
