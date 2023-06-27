@@ -10,15 +10,18 @@ const pinia = createPinia()
 const app = createApp(App)
 
 app.directive('noMoreClick', el => {
-  el.addEventListener('click', e => {
-    el.disabled = true
-    el.classList.add('is-disabled')
-    let timer = setTimeout(() => {
-      el.disabled = false
-      el.classList.remove('is-disabled')
-      clearTimeout(timer)
-    }, 2000)
-  })
+  // let func = e => {
+  //   el.disabled = true
+  //   console.log(el.classList.contains('is-disabled'))
+  //   el.classList.add('is-disabled')
+  //   let timer = setTimeout(() => {
+  //     console.log('aaa')
+  //     el.disabled = false
+  //     el.classList.remove('is-disabled')
+  //     clearTimeout(timer)
+  //   }, 2000)
+  // }
+  // el.addEventListener('click', func)
 })
 
 app.use(pinia);

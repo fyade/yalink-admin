@@ -2,8 +2,8 @@
 import { nextTick, onMounted, reactive, ref, watch } from "vue"
 import { usePageStore } from "store/page.js"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { Operate, publicDict } from "utils/base.js"
-import Pagination from "comp/pagination/Pagination.vue";
+import { final, Operate, publicDict, shift_yes_no } from "utils/base.js"
+import Pagination from "comp/pagination/Pagination.vue"
 
 let state = reactive({
   dialogVisible: false,
@@ -43,23 +43,24 @@ let state = reactive({
 })
 let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
-let loadingRef = ref(false)
+let tableLoadingRef = ref(false)
+let switchLoadingRef = ref(false)
 
 /**
  * 查询
  */
 let getData = () => {
-  loadingRef.value = true
-  // 调接口
+  tableLoadingRef.value = true
+  state.list = []
   let obj = { ...usePageStore().getPage, ...state.filterForm }
   // func(obj).then(res => {
   //   // 普通查询
   //   state.list = res.data
-  //   state.list = res.data.list
   //   // 分页查询
+  //   state.list = res.data.list
   //   state.total = res.data.total
   // }).finally(() => {
-  loadingRef.value = false
+  tableLoadingRef.value = false
   // })
 }
 /**
@@ -83,10 +84,30 @@ let updData = () => {
   // func(obj).then(res => {
   //   if (res.code === 200) {
   //     ElMessage.success(Operate.success)
+  //     state.dialogVisible = false
   //     getData()
   //   }
-  // }).finally(() => {
-  //   state.dialogVisible = false
+  // })
+}
+/**
+ * 修改禁用状态
+ * @param id
+ */
+let updDataDisabled = id => {
+  let obj = state.list.find(item => item.id === id)
+  obj.disabled = shift_yes_no[obj.disabled]
+  // return func(obj)
+}
+/**
+ * 修改顺序
+ * @param ids
+ */
+let updDataOrder = (...ids) => {
+  // func(...ids).then(res => {
+  //   if (res.code === 200) {
+  //     ElMessage.success(Operate.success)
+  //     getData()
+  //   }
   // })
 }
 /**
@@ -115,6 +136,11 @@ const dCan = () => {
 }
 // 弹窗确定
 const dCon = () => {
+  Object.keys(state.dialogForm).forEach(item => {
+    if (typeof state.dialogForm[item] === 'string') {
+      state.dialogForm[item] = state.dialogForm[item].trim()
+    }
+  })
   dialogFormRef.value.validate((valid, fields) => {
     if (valid) {
       const obj = {
@@ -131,6 +157,11 @@ const dCon = () => {
 }
 // 筛选
 const fCon = () => {
+  Object.keys(state.filterForm).forEach(item => {
+    if (typeof state.filterForm[item] === 'string') {
+      state.filterForm[item] = state.filterForm[item].trim()
+    }
+  })
   getData()
 }
 // 重置
@@ -147,7 +178,7 @@ const gIns = () => {
 // 修改
 const gUpd = () => {
   if (state.multipleSelection.length !== 1) return ElMessage.warning('请选择 1 条数据')
-  tUpd(state.multipleSelection[0])
+  tUpd(state.multipleSelection[0].id)
 }
 // 删除
 const gDel = () => {
@@ -159,11 +190,32 @@ const gDel = () => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
-    delData(...state.multipleSelection)
+    let arr = []
+    state.multipleSelection.forEach(item => arr.push(item.id))
+    delData(...arr)
   }).catch(err => {
   })
+}
+// 上移
+const gMoveUp = () => {
+  if (state.multipleSelection.length === 0) return ElMessage.warning('请至少选择 1 条数据')
+  if (state.list[0].id === state.multipleSelection[0].id) return ElMessage.warning('已到达顶部，无法上移')
+  let arr = []
+  state.multipleSelection.forEach(item => arr.push(item.id))
+  arr.push(state.list[state.list.findIndex(item => item.id === state.multipleSelection[0].id) - 1].id)
+  updDataOrder(...arr)
+}
+// 下移
+const gMoveDown = () => {
+  if (state.multipleSelection.length === 0) return ElMessage.warning('请至少选择 1 条数据')
+  if (state.list[state.list.length - 1].id === state.multipleSelection[state.multipleSelection.length - 1].id) return ElMessage.warning('已到达底部，无法下移')
+  let arr = []
+  state.multipleSelection.forEach(item => arr.push(item.id))
+  arr.unshift(state.list[state.list.findIndex(item => item.id === state.multipleSelection[state.multipleSelection.length - 1].id) + 1].id)
+  updDataOrder(...arr)
 }
 // 修改
 const tUpd = id => {
@@ -186,16 +238,37 @@ const tDel = id => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
     delData(id)
   }).catch(err => {
   })
 }
+// 启用/禁用
+const tBeforeChange = id => {
+  switchLoadingRef.value = true
+  return new Promise((resolve, reject) => {
+    updDataDisabled(id).then(res => {
+      if (res.code === 200) {
+        state.list.find(item => item.id === id).disabled = shift_yes_no[state.list.find(item => item.id === id).disabled]
+        resolve(true)
+      } else {
+        reject(false)
+      }
+    }).catch(err => {
+      reject(false)
+    }).finally(() => {
+      switchLoadingRef.value = false
+    })
+  })
+}
 const handleSelectionChange = val => {
-  let arr = [];
-  val.forEach(item => arr.push(item.id));
-  state.multipleSelection = arr;
+  let arr = []
+  val.forEach(item => {
+    arr[state.list.findIndex(i => i.id === item.id)] = item
+  })
+  state.multipleSelection = arr.filter(Boolean)
 }
 const pageChange = () => {
   getData()
@@ -207,6 +280,7 @@ const pageChange = () => {
   <el-dialog
       v-model="state.dialogVisible"
       :title="state.type.label"
+      draggable
   >
     <el-form
         ref="dialogFormRef"
@@ -219,7 +293,7 @@ const pageChange = () => {
       </el-form-item>
       <!--在此下方添加表单项-->
       <!--<el-form-item :label="state.dict['']" prop="">-->
-      <!--  <el-input v-model.trim="state.dialogForm."/>-->
+      <!--  <el-input v-model="state.dialogForm."/>-->
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
     </el-form>
@@ -236,12 +310,12 @@ const pageChange = () => {
       class="demo-form-inline"
       v-if="Object.keys(state.filterForm).length>0"
       ref="filterFormRef"
-      :inline="true"
       :model="state.filterForm"
+      :inline="true"
   >
     <!--在此下方添加表单项-->
     <!--<el-form-item :label="state.dict['']">-->
-    <!--  <el-input v-model.trim="state.filterForm['']" :placeholder="state.dict['']"/>-->
+    <!--  <el-input v-model="state.filterForm['']" :placeholder="state.dict['']"/>-->
     <!--</el-form-item>-->
     <!--在此上方添加表单项-->
     <el-form-item>
@@ -257,12 +331,14 @@ const pageChange = () => {
     </el-button>
     <el-button v-no-more-click type="danger" plain :disabled="state.multipleSelection.length===0" @click="gDel">删除
     </el-button>
+    <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveUp">上移</el-button>
+    <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveDown">下移</el-button>
   </div>
 
   <!--数据表格-->
   <el-table
       style="width: 100%"
-      v-loading="loadingRef"
+      v-loading="tableLoadingRef"
       :data="state.list"
       @selection-change="handleSelectionChange"
   >
@@ -273,7 +349,17 @@ const pageChange = () => {
     <!--<el-table-column prop="" :label="state.dict['']" width="120"/>-->
     <!--在此上方添加表格列-->
     <!--<el-table-column prop="orderNum" :label="state.dict['orderNum']" width="60"/>-->
-    <!--<el-table-column prop="disabled" :label="state.dict['disabled']" width="80"/>-->
+    <el-table-column :label="state.dict['disabled']" width="80">
+      <template #default="{row}">
+        <el-switch
+            v-model="row.disabled"
+            :loading="switchLoadingRef"
+            :active-value="final.DISABLED_NO"
+            :inactive-value="final.DISABLED_YES"
+            :before-change="tBeforeChange.bind(this,row.id)"
+        />
+      </template>
+    </el-table-column>
     <!--<el-table-column prop="createBy" :label="state.dict['createBy']" width="120"/>-->
     <!--<el-table-column prop="updateBy" :label="state.dict['updateBy']" width="120"/>-->
     <!--<el-table-column prop="createTime" :label="state.dict['createTime']" width="180"/>-->

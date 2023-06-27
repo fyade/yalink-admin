@@ -1,9 +1,10 @@
 <script setup>
-import { delList, insOne, selAll, updOne } from 'api/searchEngine.js';
-import { nextTick, reactive, ref, watch } from "vue";
+import { delList, insOne, selAll, updOne, updOrder } from 'api/searchEngine.js';
+import { nextTick, onMounted, reactive, ref, watch } from "vue";
 import { usePageStore } from "store/page.js";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Operate, publicDict } from "utils/base.js";
+import { final, Operate, publicDict, shift_yes_no } from "utils/base.js";
+import Pagination from "comp/pagination/Pagination.vue";
 
 let state = reactive({
   dialogVisible: false,
@@ -11,7 +12,12 @@ let state = reactive({
     value: '',
     label: ''
   },
-  form: {
+  // 这个是弹出框表单
+  // 格式: {
+  //   id: '',
+  //   ...
+  // }
+  dialogForm: {
     id: '',
     name: '',
     descr: '',
@@ -20,7 +26,12 @@ let state = reactive({
     paramKey: '',
     orderNum: 0
   },
-  rules: {
+  // 这个是弹出框表单校验
+  // 格式: {
+  //   name: [{ required: true }],
+  //   ...
+  // }
+  dFormRules: {
     name: [{ required: true }],
     descr: [{ required: true }],
     url: [{ required: true }],
@@ -28,6 +39,11 @@ let state = reactive({
     paramKey: [{ required: true }],
     orderNum: [{ required: true }]
   },
+  // 字典
+  // 格式: {
+  //   name: '名字',
+  //   ...
+  // }
   dict: {
     ...publicDict,
     name: '搜索引擎名',
@@ -36,6 +52,11 @@ let state = reactive({
     secondLevelUrl: '搜索二级url',
     paramKey: '搜索参数主键'
   },
+  // 筛选表单
+  // 格式: {
+  //   name: '',
+  //   ...
+  // }
   filterForm: {
     name: '',
     descr: '',
@@ -47,48 +68,75 @@ let state = reactive({
   multipleSelection: [],
   total: 0
 })
-let formRef = ref(null)
-let loadingRef = ref(false)
+let dialogFormRef = ref(null)
+let filterFormRef = ref(null)
+let tableLoadingRef = ref(false)
+let switchLoadingRef = ref(false)
 
-watch(() => state.dialogVisible, (newVal) => {
-  if (newVal) {
-  } else {
-    formRef.value?.resetFields()
-  }
-})
-
-// 获取数据接口
+/**
+ * 查询
+ */
 let getData = () => {
-  loadingRef.value = true
-  // 调接口
-  selAll({ ...usePageStore().getPage, ...state.filterForm }).then(res => {
+  tableLoadingRef.value = true
+  state.list = []
+  let obj = { ...usePageStore().getPage, ...state.filterForm }
+  selAll(obj).then(res => {
     state.list = res.data.list
     state.total = res.data.total
   }).finally(() => {
-    loadingRef.value = false
+    tableLoadingRef.value = false
   })
 }
-// 新增
+/**
+ * 新增
+ */
 let insData = () => {
-  insOne(state.form).then(res => {
+  let obj = state.dialogForm
+  insOne(obj).then(res => {
     if (res.code === 200) {
       ElMessage.success(Operate.success)
-      getData()
       state.dialogVisible = false
+      getData()
     }
   })
 }
-// 修改
+/**
+ * 修改
+ */
 let updData = () => {
-  updOne(state.form).then(res => {
+  let obj = state.dialogForm
+  updOne(obj).then(res => {
     if (res.code === 200) {
       ElMessage.success(Operate.success)
-      getData()
       state.dialogVisible = false
+      getData()
     }
   })
 }
-// 删除数据接口
+/**
+ * 修改禁用状态
+ * @param id
+ */
+let updDataDisabled = id => {
+  let obj = state.list.find(item => item.id === id)
+  obj.disabled = shift_yes_no[obj.disabled]
+  return updOne(obj)
+}
+/**
+ * 修改顺序
+ * @param ids
+ */
+let updDataOrder = (...ids) => {
+  updOrder(...ids).then(res => {
+    if (res.code === 200) {
+      ElMessage.success(Operate.success)
+      getData()
+    }
+  })
+}
+/**
+ * 删除
+ */
 let delData = (...ids) => {
   delList(...ids).then(res => {
     if (res.code === 200) {
@@ -97,7 +145,14 @@ let delData = (...ids) => {
     }
   })
 }
-getData()
+
+onMounted(() => getData())
+watch(() => state.dialogVisible, (newVal) => {
+  if (newVal) {
+  } else {
+    dialogFormRef.value?.resetFields();
+  }
+})
 
 // 弹窗取消
 const dCan = () => {
@@ -105,7 +160,12 @@ const dCan = () => {
 }
 // 弹窗确定
 const dCon = () => {
-  formRef.value.validate((valid, fields) => {
+  Object.keys(state.dialogForm).forEach(item => {
+    if (typeof state.dialogForm[item] === 'string') {
+      state.dialogForm[item] = state.dialogForm[item].trim()
+    }
+  })
+  dialogFormRef.value.validate((valid, fields) => {
     if (valid) {
       const obj = {
         ins: () => insData(),
@@ -121,13 +181,16 @@ const dCon = () => {
 }
 // 筛选
 const fCon = () => {
+  Object.keys(state.filterForm).forEach(item => {
+    if (typeof state.filterForm[item] === 'string') {
+      state.filterForm[item] = state.filterForm[item].trim()
+    }
+  })
   getData()
 }
 // 重置
 const fCan = () => {
-  Object.keys(state.filterForm).forEach(item => {
-    state.filterForm[item] = ''
-  })
+  filterFormRef.value.resetFields()
   getData()
 }
 // 新增
@@ -139,7 +202,7 @@ const gIns = () => {
 // 修改
 const gUpd = () => {
   if (state.multipleSelection.length !== 1) return ElMessage.warning('请选择 1 条数据')
-  tUpd(state.multipleSelection[0])
+  tUpd(state.multipleSelection[0].id)
 }
 // 删除
 const gDel = () => {
@@ -151,11 +214,32 @@ const gDel = () => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
-    delData(...state.multipleSelection)
+    let arr = []
+    state.multipleSelection.forEach(item => arr.push(item.id))
+    delData(...arr)
   }).catch(err => {
   })
+}
+// 上移
+const gMoveUp = () => {
+  if (state.multipleSelection.length === 0) return ElMessage.warning('请至少选择 1 条数据')
+  if (state.list[0].id === state.multipleSelection[0].id) return ElMessage.warning('已到达顶部，无法上移')
+  let arr = []
+  state.multipleSelection.forEach(item => arr.push(item.id))
+  arr.push(state.list[state.list.findIndex(item => item.id === state.multipleSelection[0].id) - 1].id)
+  updDataOrder(...arr)
+}
+// 下移
+const gMoveDown = () => {
+  if (state.multipleSelection.length === 0) return ElMessage.warning('请至少选择 1 条数据')
+  if (state.list[state.list.length - 1].id === state.multipleSelection[state.multipleSelection.length - 1].id) return ElMessage.warning('已到达底部，无法下移')
+  let arr = []
+  state.multipleSelection.forEach(item => arr.push(item.id))
+  arr.unshift(state.list[state.list.findIndex(item => item.id === state.multipleSelection[state.multipleSelection.length - 1].id) + 1].id)
+  updDataOrder(...arr)
 }
 // 修改
 const tUpd = id => {
@@ -164,8 +248,8 @@ const tUpd = id => {
   state.dialogVisible = true
   nextTick(() => {
     let obj = state.list.find(item => item.id === id)
-    Object.keys(state.form).forEach(item => {
-      state.form[item] = obj[item]
+    Object.keys(state.dialogForm).forEach(item => {
+      state.dialogForm[item] = obj[item]
     })
   })
 }
@@ -178,18 +262,39 @@ const tDel = id => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
     delData(id)
   }).catch(err => {
   })
 }
-let handleSelectionChange = val => {
-  let arr = [];
-  val.forEach(item => arr.push(item.id));
-  state.multipleSelection = arr;
+// 启用/禁用
+const tBeforeChange = id => {
+  switchLoadingRef.value = true
+  return new Promise((resolve, reject) => {
+    updDataDisabled(id).then(res => {
+      if (res.code === 200) {
+        state.list.find(item => item.id === id).disabled = shift_yes_no[state.list.find(item => item.id === id).disabled]
+        resolve(true)
+      } else {
+        reject(false)
+      }
+    }).catch(err => {
+      reject(false)
+    }).finally(() => {
+      switchLoadingRef.value = false
+    })
+  })
 }
-let pageChange = () => {
+const handleSelectionChange = val => {
+  let arr = []
+  val.forEach(item => {
+    arr[state.list.findIndex(i => i.id === item.id)] = item
+  })
+  state.multipleSelection = arr.filter(Boolean)
+}
+const pageChange = () => {
   getData()
 }
 </script>
@@ -199,32 +304,38 @@ let pageChange = () => {
   <el-dialog
       v-model="state.dialogVisible"
       :title="state.type.label"
+      draggable
   >
-    <el-form ref="formRef" :model="state.form" label-width="150px" :rules="state.rules">
-      <!--在此下方添加表单项-->
+    <el-form
+        ref="dialogFormRef"
+        :model="state.dialogForm"
+        label-width="120px"
+        :rules="state.dFormRules"
+    >
       <el-form-item v-if="state.type.value!=='ins'" :label="state.dict['id']" prop="id">
-        <span>{{ state.form.id }}</span>
+        <span>{{ state.dialogForm.id }}</span>
       </el-form-item>
+      <!--在此下方添加表单项-->
       <el-form-item :label="state.dict['name']" prop="name">
-        <el-input v-model.trim="state.form.name"/>
+        <el-input v-model="state.dialogForm.name"/>
       </el-form-item>
       <el-form-item :label="state.dict['descr']" prop="descr">
-        <el-input type="textarea" v-model.trim="state.form.descr"/>
+        <el-input type="textarea" v-model="state.dialogForm.descr"/>
       </el-form-item>
       <el-form-item :label="state.dict['url']" prop="url">
-        <el-input v-model.trim="state.form.url"/>
+        <el-input v-model="state.dialogForm.url"/>
       </el-form-item>
       <el-form-item :label="state.dict['secondLevelUrl']" prop="secondLevelUrl">
-        <el-input v-model.trim="state.form.secondLevelUrl"/>
+        <el-input v-model="state.dialogForm.secondLevelUrl"/>
       </el-form-item>
       <el-form-item :label="state.dict['paramKey']" prop="paramKey">
-        <el-input v-model.trim="state.form.paramKey"/>
+        <el-input v-model="state.dialogForm.paramKey"/>
       </el-form-item>
       <el-form-item :label="state.dict['orderNum']" prop="orderNum">
-        <el-input-number v-model="state.form.orderNum"/>
+        <el-input-number v-model="state.dialogForm.orderNum"/>
       </el-form-item>
       <!--<el-form-item :label="state.dict['']" prop="">-->
-      <!--  <el-input v-model="state.form."/>-->
+      <!--  <el-input v-model="state.dialogForm."/>-->
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
     </el-form>
@@ -237,22 +348,28 @@ let pageChange = () => {
   </el-dialog>
 
   <!--顶部筛选表单-->
-  <el-form :inline="true" :model="state.filterForm" class="demo-form-inline">
+  <el-form
+      class="demo-form-inline"
+      v-if="Object.keys(state.filterForm).length>0"
+      ref="filterFormRef"
+      :model="state.filterForm"
+      :inline="true"
+  >
     <!--在此下方添加表单项-->
     <el-form-item :label="state.dict['name']">
-      <el-input v-model.trim="state.filterForm['name']" :placeholder="state.dict['name']"/>
+      <el-input v-model="state.filterForm['name']" :placeholder="state.dict['name']"/>
     </el-form-item>
     <el-form-item :label="state.dict['descr']">
-      <el-input v-model.trim="state.filterForm['descr']" :placeholder="state.dict['descr']"/>
+      <el-input v-model="state.filterForm['descr']" :placeholder="state.dict['descr']"/>
     </el-form-item>
     <el-form-item :label="state.dict['url']">
-      <el-input v-model.trim="state.filterForm['url']" :placeholder="state.dict['url']"/>
+      <el-input v-model="state.filterForm['url']" :placeholder="state.dict['url']"/>
     </el-form-item>
     <el-form-item :label="state.dict['secondLevelUrl']">
-      <el-input v-model.trim="state.filterForm['secondLevelUrl']" :placeholder="state.dict['secondLevelUrl']"/>
+      <el-input v-model="state.filterForm['secondLevelUrl']" :placeholder="state.dict['secondLevelUrl']"/>
     </el-form-item>
     <el-form-item :label="state.dict['paramKey']">
-      <el-input v-model.trim="state.filterForm['paramKey']" :placeholder="state.dict['paramKey']"/>
+      <el-input v-model="state.filterForm['paramKey']" :placeholder="state.dict['paramKey']"/>
     </el-form-item>
     <!--在此上方添加表单项-->
     <el-form-item>
@@ -268,10 +385,17 @@ let pageChange = () => {
     </el-button>
     <el-button v-no-more-click type="danger" plain :disabled="state.multipleSelection.length===0" @click="gDel">删除
     </el-button>
+    <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveUp">上移</el-button>
+    <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveDown">下移</el-button>
   </div>
 
   <!--数据表格-->
-  <el-table style="width: 100%" :data="state.list" v-loading="loadingRef" @selection-change="handleSelectionChange">
+  <el-table
+      style="width: 100%"
+      v-loading="tableLoadingRef"
+      :data="state.list"
+      @selection-change="handleSelectionChange"
+  >
     <el-table-column fixed type="selection" width="55"/>
     <el-table-column fixed prop="id" :label="state.dict['id']" width="180"/>
     <!--上面id列的宽度改一下-->
@@ -281,11 +405,23 @@ let pageChange = () => {
     <el-table-column prop="url" :label="state.dict['url']" width="240"/>
     <el-table-column prop="secondLevelUrl" :label="state.dict['secondLevelUrl']" width="120"/>
     <el-table-column prop="paramKey" :label="state.dict['paramKey']" width="120"/>
+    <!--在此上方添加表格列-->
     <el-table-column prop="orderNum" :label="state.dict['orderNum']" width="60"/>
-    <el-table-column prop="disabled" :label="state.dict['disabled']" width="80"/>
+    <el-table-column :label="state.dict['disabled']" width="80">
+      <template #default="{row}">
+        <el-switch
+            v-model="row.disabled"
+            :loading="switchLoadingRef"
+            :active-value="final.DISABLED_NO"
+            :inactive-value="final.DISABLED_YES"
+            :before-change="tBeforeChange.bind(this,row.id)"
+        />
+      </template>
+    </el-table-column>
+    <el-table-column prop="createBy" :label="state.dict['createBy']" width="120"/>
+    <el-table-column prop="updateBy" :label="state.dict['updateBy']" width="120"/>
     <el-table-column prop="createTime" :label="state.dict['createTime']" width="180"/>
     <el-table-column prop="updateTime" :label="state.dict['updateTime']" width="180"/>
-    <!--在此上方添加表格列-->
     <el-table-column fixed="right" label="操作" min-width="120">
       <template #default="{row}">
         <el-button v-no-more-click link type="primary" size="small" @click="tUpd(row.id)">修改</el-button>
@@ -298,9 +434,11 @@ let pageChange = () => {
   </el-table>
 
   <!--分页-->
-  <Pagination :total="Number(state.total)" @page-change="pageChange"/>
+  <Pagination
+      :total="Number(state.total)"
+      @page-change="pageChange"
+  />
 </template>
 
 <style scoped lang="scss">
-
 </style>

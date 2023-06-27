@@ -10,12 +10,16 @@ export const PAGINATION = {
 export const publicDict = {
   id: '主键id',
   orderNum: '顺序',
-  disabled: '是否禁用',
+  disabled: '是否启用',
   createBy: 'createBy',
   updateBy: 'updateBy',
   createTime: 'createTime',
   updateTime: 'updateTime',
   deleted: '逻辑删除'
+}
+export const final = {
+  DISABLED_YES: '1',
+  DISABLED_NO: '0'
 }
 
 // 只能选择最子层
@@ -32,4 +36,9 @@ export const cascaderProps2 = {
 
 export const Operate = {
   success: '操作成功'
+}
+
+export const shift_yes_no = {
+  '1': '0',
+  '0': '1'
 }

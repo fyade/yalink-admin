@@ -113,6 +113,11 @@ const dCan = () => {
 }
 // 弹窗确定
 const dCon = () => {
+  Object.keys(state.dialogForm).forEach(item => {
+    if (typeof state.dialogForm[item] === 'string') {
+      state.dialogForm[item] = state.dialogForm[item].trim()
+    }
+  })
   formRef.value.validate((valid, fields) => {
     if (valid) {
       const obj = {
@@ -129,6 +134,11 @@ const dCon = () => {
 }
 // 筛选
 const fCon = () => {
+  Object.keys(state.filterForm).forEach(item => {
+    if (typeof state.filterForm[item] === 'string') {
+      state.filterForm[item] = state.filterForm[item].trim()
+    }
+  })
   getData()
 }
 // 重置
@@ -159,6 +169,7 @@ const gDel = () => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
     delData(...state.multipleSelection)
@@ -186,6 +197,7 @@ const tDel = id => {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
+        draggable: true
       }
   ).then(() => {
     delData(id)
@@ -204,6 +216,7 @@ const handleSelectionChange = val => {
   <el-dialog
       v-model="state.dialogVisible"
       :title="state.type.label"
+      draggable
   >
     <el-form
         ref="formRef"
@@ -216,10 +229,10 @@ const handleSelectionChange = val => {
         <span>{{ state.dialogForm.id }}</span>
       </el-form-item>
       <el-form-item :label="state.dict['name']" prop="name">
-        <el-input v-model.trim="state.dialogForm.name"/>
+        <el-input v-model="state.dialogForm.name"/>
       </el-form-item>
       <el-form-item :label="state.dict['descr']" prop="descr">
-        <el-input v-model.trim="state.dialogForm.descr"/>
+        <el-input v-model="state.dialogForm.descr"/>
       </el-form-item>
       <el-form-item :label="state.dict['orderNum']" prop="orderNum">
         <el-input-number v-model="state.dialogForm.orderNum"/>
@@ -233,7 +246,7 @@ const handleSelectionChange = val => {
         />
       </el-form-item>
       <!--<el-form-item :label="state.dict['']" prop="">-->
-      <!--  <el-input v-model.trim="state.dialogForm."/>-->
+      <!--  <el-input v-model="state.dialogForm."/>-->
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
     </el-form>
@@ -254,7 +267,7 @@ const handleSelectionChange = val => {
   >
     <!--在此下方添加表单项-->
     <!--<el-form-item :label="state.dict['']">-->
-    <!--  <el-input v-model.trim="state.filterForm['']" :placeholder="state.dict['']"/>-->
+    <!--  <el-input v-model="state.filterForm['']" :placeholder="state.dict['']"/>-->
     <!--</el-form-item>-->
     <!--在此上方添加表单项-->
     <el-form-item>

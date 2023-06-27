@@ -56,7 +56,7 @@ export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum })
  * @param orderNum
  * @returns {*}
  */
-export function updOne({ id, name, descr, url, secondLevelUrl, paramKey, orderNum }) {
+export function updOne({ id, name, descr, url, secondLevelUrl, paramKey, orderNum, disabled }) {
   return ax({
     url: '/admin/search-engine',
     method: 'PUT',
@@ -67,9 +67,23 @@ export function updOne({ id, name, descr, url, secondLevelUrl, paramKey, orderNu
       url,
       secondLevelUrl,
       paramKey,
-      orderNum
+      orderNum,
+      disabled
     }
   });
+}
+
+/**
+ * 修改顺序
+ * @param ids
+ * @returns {*}
+ */
+export function updOrder(...ids) {
+  return ax({
+    url: '/admin/search-engine/order-num',
+    method: 'POST',
+    data: ids
+  })
 }
 
 /**
