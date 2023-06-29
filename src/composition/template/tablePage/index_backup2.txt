@@ -1,122 +1,23 @@
 import { nextTick, onMounted, watch } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { final, Operate, shift_yes_no } from "utils/base.js"
-import { usePageStore } from "store/page.js"
+import { final, shift_yes_no } from "utils/base.js"
 
 export const funcTablePage = (
-    config,
     state,
-    state2,
     dialogFormRef,
     filterFormRef,
     tableLoadingRef,
     switchLoadingRef,
-    func
+    getData,
+    getDataById,
+    insData,
+    updData,
+    updDataOrder,
+    updDataDisabled,
+    updDataDisabledById,
+    delData
 ) => {
-  /**
-   * 查询
-   */
-  const getData = () => {
-    tableLoadingRef.value = true
-    state.list = []
-    let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
-    func.selectList(obj).then(res => {
-      if (config.pageQuery) {
-        state.list = res.data.list
-        state.total = res.data.total
-      } else {
-        state.list = res.data
-      }
-    }).finally(() => {
-      tableLoadingRef.value = false
-    })
-  }
-  /**
-   * 查询单个
-   * @param id
-   */
-  const getDataById = id => {
-    tableLoadingRef.value = true
-    func.selectById(id).then(res => {
-      state.list[state.list.findIndex(item => item.id === id)] = res.data
-    }).finally(() => {
-      tableLoadingRef.value = false
-    })
-  }
-  /**
-   * 新增
-   */
-  const insData = () => {
-    let obj = state.dialogForm
-    func.insertOne(obj).then(res => {
-      if (res.code === 200) {
-        ElMessage.success(Operate.success)
-        state.dialogVisible = false
-        getData()
-      }
-    })
-  }
-  /**
-   * 修改
-   */
-  const updData = (obj = state.dialogForm) => {
-    func.updateOne(obj).then(res => {
-      if (res.code === 200) {
-        ElMessage.success(Operate.success)
-        state.dialogVisible = false
-        getData()
-      }
-    })
-  }
-  /**
-   * 修改顺序
-   * @param ids
-   */
-  const updDataOrder = (...ids) => {
-    func.updateOrder(...ids).then(res => {
-      if (res.code === 200) {
-        ElMessage.success(Operate.success)
-        getData()
-      }
-    })
-  }
-  /**
-   * 修改禁用状态
-   * @param objs
-   */
-  const updDataDisabled = (...objs) => {
-    tableLoadingRef.value = true
-    func.updateDisabled(...objs).then(res => {
-      getData()
-    }).finally(() => {
-      tableLoadingRef.value = false
-    })
-  }
-  /**
-   * 修改单个禁用状态
-   * 数据列表内开关专用，请勿删除
-   * @param id
-   */
-  const updDataDisabledById = id => {
-    let obj = state.list.find(item => item.id === id)
-    obj.disabled = shift_yes_no[obj.disabled]
-    return func.updateOne(obj)
-  }
-  /**
-   * 删除
-   */
-  const delData = (...ids) => {
-    func.deleteList(...ids).then(res => {
-      if (res.code === 200) {
-        ElMessage.success(Operate.success)
-        getData()
-      }
-    })
-  }
-
-  onMounted(() => {
-    if (config.mountedGetData) getData()
-  })
+  onMounted(() => getData())
   watch(() => state.dialogVisible, (newVal) => {
     if (newVal) {
     } else {
@@ -301,12 +202,6 @@ export const funcTablePage = (
     })
     state.multipleSelection = arr.filter(Boolean)
   }
-  const handlerFocus = num => {
-    state2.orderNum = num
-  }
-  const handleOrderNumChange = id => {
-    updData(state.list.find(item => item.id === id))
-  }
   const pageChange = () => {
     getData()
   }
@@ -328,8 +223,6 @@ export const funcTablePage = (
     tDel,
     tBeforeChange,
     handleSelectionChange,
-    handlerFocus,
-    handleOrderNumChange,
     pageChange
   }
 }

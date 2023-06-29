@@ -4,10 +4,45 @@ import ax from 'utils/request.js';
  * 获取所有分类信息
  * @returns {*}
  */
-export function getAllSorts() {
+export function selList() {
   return ax({
     url: '/admin/sort',
     method: 'GET'
+  });
+}
+
+/**
+ * 获取某个
+ * @param id
+ * @returns {*}
+ */
+export function selOne(id) {
+  return ax({
+    url: `/admin/sort/${id}`,
+    method: 'GET'
+  })
+}
+
+/**
+ * 新增分类
+ * @param name
+ * @param descr
+ * @param orderNum
+ * @param parentId
+ * @param disabled
+ * @returns {*}
+ */
+export function insOne({ name, descr, orderNum, parentId, disabled }) {
+  return ax({
+    url: '/admin/sort',
+    method: 'POST',
+    data: {
+      name,
+      descr,
+      orderNum,
+      parentId,
+      disabled
+    }
   });
 }
 
@@ -18,9 +53,10 @@ export function getAllSorts() {
  * @param descr
  * @param orderNum
  * @param parentId
+ * @param disabled
  * @returns {*}
  */
-export function setSort({ id, name, descr, orderNum, parentId = 0 }) {
+export function updOne({ id, name, descr, orderNum, parentId, disabled }) {
   return ax({
     url: '/admin/sort',
     method: 'PUT',
@@ -29,40 +65,47 @@ export function setSort({ id, name, descr, orderNum, parentId = 0 }) {
       name,
       descr,
       orderNum,
-      parentId
+      parentId,
+      disabled
     }
   });
+}
+
+/**
+ * 修改顺序
+ * @param ids
+ * @returns {*}
+ */
+export function updOrder(...ids) {
+  return ax({
+    url: '/admin/sort/order-num',
+    method: 'POST',
+    data: ids
+  })
+}
+
+/**
+ * 启用禁用
+ * @param objs
+ * @returns {*}
+ */
+export function updDisabled(...objs) {
+  return ax({
+    url: '/admin/sort/disabled',
+    method: 'POST',
+    data: objs
+  })
 }
 
 /**
  * 删除分类
- * @param id
+ * @param ids
  * @returns {*}
  */
-export function delSortById(id) {
+export function delList(...ids) {
   return ax({
-    url: `/admin/sort/${id}`,
-    method: 'DELETE'
-  });
-}
-
-/**
- * 新增分类
- * @param name
- * @param descr
- * @param orderNum
- * @param parentId
- * @returns {*}
- */
-export function addSort({ name, descr, orderNum, parentId }) {
-  return ax({
-    url: '/admin/sort/add',
-    method: 'POST',
-    data: {
-      name,
-      descr,
-      orderNum,
-      parentId: !!parentId ? parentId : 0
-    }
+    url: `/admin/sort`,
+    method: 'DELETE',
+    data: ids
   });
 }

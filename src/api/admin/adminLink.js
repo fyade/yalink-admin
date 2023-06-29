@@ -22,11 +22,12 @@ export function selLinkBySortId(sortId) {
  * @param name
  * @param descr
  * @param url
+ * @param docUrl
  * @param siteSearch
  * @param sortId
  * @returns {*}
  */
-export function selLink({ pageNum, pageSize, name, descr, url, siteSearch, sortId }) {
+export function selList({ pageNum, pageSize, name, descr, url, docUrl, siteSearch, sortId }) {
   return ax({
     url: '/admin/link',
     method: 'GET',
@@ -36,10 +37,54 @@ export function selLink({ pageNum, pageSize, name, descr, url, siteSearch, sortI
       name,
       descr,
       url,
+      docUrl,
       siteSearch,
       sortId
     }
   })
+}
+
+/**
+ * 获取某个
+ * @param id
+ * @returns {*}
+ */
+export function selOne(id) {
+  return ax({
+    url: `/admin/link/${id}`,
+    method: 'GET'
+  })
+}
+
+/**
+ * 新增链接
+ * @param name
+ * @param descr
+ * @param ico
+ * @param url
+ * @param docUrl
+ * @param siteSearch
+ * @param orderNum
+ * @param sortId
+ * @param disabled
+ * @returns {*}
+ */
+export function insOne({ name, descr, ico, url, docUrl, siteSearch, orderNum, sortId, disabled }) {
+  return ax({
+    url: '/admin/link',
+    method: 'POST',
+    data: {
+      name,
+      descr,
+      ico,
+      url,
+      docUrl,
+      siteSearch,
+      orderNum,
+      sortId,
+      disabled
+    }
+  });
 }
 
 /**
@@ -49,12 +94,14 @@ export function selLink({ pageNum, pageSize, name, descr, url, siteSearch, sortI
  * @param descr
  * @param ico
  * @param url
+ * @param docUrl
  * @param siteSearch
  * @param orderNum
  * @param sortId
+ * @param disabled
  * @returns {*}
  */
-export function updLink({ id, name, descr, ico, url, siteSearch, orderNum, sortId }) {
+export function updOne({ id, name, descr, ico, url, docUrl, siteSearch, orderNum, sortId, disabled }) {
   return ax({
     url: '/admin/link',
     method: 'PUT',
@@ -64,38 +111,39 @@ export function updLink({ id, name, descr, ico, url, siteSearch, orderNum, sortI
       descr,
       ico,
       url,
+      docUrl,
       siteSearch,
       orderNum,
-      sortId
+      sortId,
+      disabled
     }
-  });
+  })
 }
 
 /**
- * 新增链接
- * @param name
- * @param descr
- * @param ico
- * @param url
- * @param siteSearch
- * @param orderNum
- * @param sortId
+ * 修改顺序
+ * @param ids
  * @returns {*}
  */
-export function insLink({ name, descr, ico, url, siteSearch, orderNum, sortId }) {
+export function updOrder(...ids) {
   return ax({
-    url: '/admin/link',
+    url: '/admin/link/order-num',
     method: 'POST',
-    data: {
-      name,
-      descr,
-      ico,
-      url,
-      siteSearch,
-      orderNum,
-      sortId
-    }
-  });
+    data: ids
+  })
+}
+
+/**
+ * 启用禁用
+ * @param objs
+ * @returns {*}
+ */
+export function updDisabled(...objs) {
+  return ax({
+    url: '/admin/link/disabled',
+    method: 'POST',
+    data: objs
+  })
 }
 
 /**
@@ -103,7 +151,7 @@ export function insLink({ name, descr, ico, url, siteSearch, orderNum, sortId })
  * @param ids
  * @returns {*}
  */
-export function delLink(...ids) {
+export function delList(...ids) {
   return ax({
     url: '/admin/link',
     method: 'DELETE',

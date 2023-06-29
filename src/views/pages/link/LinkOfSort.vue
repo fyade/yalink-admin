@@ -1,9 +1,10 @@
 <script setup>
-import { reactive, ref } from "vue"
-import { final, Operate, publicDict, shift_yes_no } from "utils/base.js"
+import { nextTick, onMounted, reactive, ref, watch } from "vue"
+import { cascaderProps1, final, publicDict } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
 import { funcTablePage } from "@/composition/template/tablePage/index.js"
-import { delList, selOne, updDisabled, insOne, selAll, updOne, updOrder } from 'api/searchEngine.js'
+import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminLink.js'
+import { usePageStore } from "store/page.js";
 
 let state = reactive({
   dialogVisible: false,
@@ -22,10 +23,12 @@ let state = reactive({
     id: '',
     name: '',
     descr: '',
+    ico: '',
     url: '',
-    secondLevelUrl: '',
-    paramKey: '',
+    docUrl: '',
+    siteSearch: '',
     orderNum: 0,
+    sortId: '',
     disabled: final.DISABLED_NO
   },
   // 这个是弹出框表单校验
@@ -35,11 +38,8 @@ let state = reactive({
   // }
   dFormRules: {
     name: [{ required: true }],
-    descr: [{ required: true }],
     url: [{ required: true }],
-    secondLevelUrl: [{ required: true }],
-    paramKey: [{ required: true }],
-    orderNum: [{ required: true }]
+    sortId: [{ required: true }]
   },
   // 字典
   // 格式: {
@@ -49,11 +49,13 @@ let state = reactive({
   // }
   dict: {
     ...publicDict,
-    name: '搜索引擎名',
-    descr: '搜索引擎描述',
-    url: '搜索引擎链接',
-    secondLevelUrl: '搜索二级url',
-    paramKey: '搜索参数主键'
+    name: '链接名',
+    descr: '链接描述',
+    url: '链接地址',
+    docUrl: '文档链接',
+    siteSearch: '站内搜索链接',
+    ico: '图标',
+    sortId: '父分类'
   },
   // 筛选表单
   // 格式: {
@@ -64,8 +66,8 @@ let state = reactive({
     name: '',
     descr: '',
     url: '',
-    secondLevelUrl: '',
-    paramKey: '',
+    docUrl: '',
+    siteSearch: ''
   },
   list: [],
   multipleSelection: [],
@@ -78,9 +80,46 @@ let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = {
-  mountedGetData: true, // 页面加载时获取数据
-  pageQuery: true // 是否分页
+const config = reactive({
+  mountedGetData: false, // 页面加载时获取数据
+  pageQuery: true, // 是否分页
+  selectParam: {
+    sortId: ''
+  } // 查询参数（补充
+})
+
+let props = defineProps({
+  sortId: {
+    type: String
+  },
+  listSort: {
+    type: Array
+  }
+})
+watch(() => props.sortId, () => {
+  state.dialogForm.sortId = props.sortId
+  config.selectParam.sortId = props.sortId
+  getData()
+})
+onMounted(() => {
+  state.dialogForm.sortId = props.sortId
+  config.selectParam.sortId = props.sortId
+  getData()
+})
+const getData = () => {
+  tableLoadingRef.value = true
+  state.list = []
+  let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
+  func.selectList(obj).then(res => {
+    if (config.pageQuery) {
+      state.list = res.data.list
+      state.total = res.data.total
+    } else {
+      state.list = res.data
+    }
+  }).finally(() => {
+    tableLoadingRef.value = false
+  })
 }
 
 const func = {
@@ -89,7 +128,7 @@ const func = {
    * @param params
    */
   selectList: params => {
-    return selAll(params)
+    return selList(params)
   },
   /**
    * 查询单个
@@ -133,6 +172,10 @@ const func = {
   deleteList: (...ids) => {
     return delList(...ids)
   }
+}
+
+const handleChange = (value) => {
+  // console.log(value)
 }
 
 const {
@@ -189,19 +232,30 @@ const {
         <el-input v-model="state.dialogForm.name"/>
       </el-form-item>
       <el-form-item :label="state.dict['descr']" prop="descr">
-        <el-input type="textarea" v-model="state.dialogForm.descr"/>
+        <el-input v-model="state.dialogForm.descr" type="textarea"/>
+      </el-form-item>
+      <el-form-item :label="state.dict['ico']" prop="ico">
+        <el-input v-model="state.dialogForm.ico"/>
       </el-form-item>
       <el-form-item :label="state.dict['url']" prop="url">
         <el-input v-model="state.dialogForm.url"/>
       </el-form-item>
-      <el-form-item :label="state.dict['secondLevelUrl']" prop="secondLevelUrl">
-        <el-input v-model="state.dialogForm.secondLevelUrl"/>
+      <el-form-item :label="state.dict['docUrl']" prop="docUrl">
+        <el-input v-model="state.dialogForm.docUrl"/>
       </el-form-item>
-      <el-form-item :label="state.dict['paramKey']" prop="paramKey">
-        <el-input v-model="state.dialogForm.paramKey"/>
+      <el-form-item :label="state.dict['siteSearch']" prop="siteSearch">
+        <el-input v-model="state.dialogForm.siteSearch"/>
       </el-form-item>
       <el-form-item :label="state.dict['orderNum']" prop="orderNum">
         <el-input-number v-model="state.dialogForm.orderNum"/>
+      </el-form-item>
+      <el-form-item :label="state.dict['sortId']" prop="sortId">
+        <el-cascader
+            v-model="state.dialogForm.sortId"
+            :options="props.listSort"
+            :props="cascaderProps1"
+            @change="handleChange"
+        />
       </el-form-item>
       <!--在此上方添加表单项-->
       <el-form-item :label="state.dict['disabled']" prop="disabled">
@@ -237,11 +291,11 @@ const {
     <el-form-item :label="state.dict['url']" prop="url">
       <el-input v-model="state.filterForm['url']" :placeholder="state.dict['url']"/>
     </el-form-item>
-    <el-form-item :label="state.dict['secondLevelUrl']" prop="secondLevelUrl">
-      <el-input v-model="state.filterForm['secondLevelUrl']" :placeholder="state.dict['secondLevelUrl']"/>
+    <el-form-item :label="state.dict['docUrl']" prop="docUrl">
+      <el-input v-model="state.filterForm['docUrl']" :placeholder="state.dict['docUrl']"/>
     </el-form-item>
-    <el-form-item :label="state.dict['paramKey']" prop="paramKey">
-      <el-input v-model="state.filterForm['paramKey']" :placeholder="state.dict['paramKey']"/>
+    <el-form-item :label="state.dict['siteSearch']" prop="siteSearch">
+      <el-input v-model="state.filterForm['siteSearch']" :placeholder="state.dict['siteSearch']"/>
     </el-form-item>
     <!--在此上方添加表单项-->
     <el-form-item>
@@ -285,11 +339,16 @@ const {
     <el-table-column fixed prop="id" :label="state.dict['id']" width="180"/>
     <!--上面id列的宽度改一下-->
     <!--在此下方添加表格列-->
-    <el-table-column prop="name" :label="state.dict['name']" width="120"/>
-    <el-table-column prop="descr" :label="state.dict['descr']" width="120"/>
-    <el-table-column prop="url" :label="state.dict['url']" width="240"/>
-    <el-table-column prop="secondLevelUrl" :label="state.dict['secondLevelUrl']" width="120"/>
-    <el-table-column prop="paramKey" :label="state.dict['paramKey']" width="120"/>
+    <el-table-column prop="name" :label="state.dict['name']" width="160"/>
+    <el-table-column prop="descr" :label="state.dict['descr']" width="240"/>
+    <el-table-column prop="url" :label="state.dict['url']" width="200"/>
+    <el-table-column prop="docUrl" :label="state.dict['docUrl']" width="200"/>
+    <el-table-column prop="siteSearch" :label="state.dict['siteSearch']" width="240"/>
+    <el-table-column prop="ico" :label="state.dict['ico']" width="60">
+      <template #default="{row}">
+        <el-image :src="row.ico" fit="contain"/>
+      </template>
+    </el-table-column>
     <!--在此上方添加表格列-->
     <el-table-column prop="orderNum" :label="state.dict['orderNum']" width="180">
       <template #default="{row}">
@@ -313,10 +372,11 @@ const {
         />
       </template>
     </el-table-column>
-    <el-table-column prop="createBy" :label="state.dict['createBy']" width="120"/>
-    <el-table-column prop="updateBy" :label="state.dict['updateBy']" width="120"/>
+    <!--<el-table-column prop="createBy" :label="state.dict['createBy']" width="120"/>-->
+    <!--<el-table-column prop="updateBy" :label="state.dict['updateBy']" width="120"/>-->
     <el-table-column prop="createTime" :label="state.dict['createTime']" width="180"/>
     <el-table-column prop="updateTime" :label="state.dict['updateTime']" width="180"/>
+    <!--<el-table-column prop="deleted" :label="state.dict['deleted']" width="60"/>-->
     <!--上方几个酌情使用-->
     <el-table-column fixed="right" label="操作" min-width="120">
       <template #default="{row}">

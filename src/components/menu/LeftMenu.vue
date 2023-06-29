@@ -22,19 +22,27 @@ const getMenuList = () => {
   menuRea.list = useMenuStore().getMenus();
 }
 
-let handleOpen = (key, keyPath) => {
+const handleOpen = (key, keyPath) => {
   // console.log(key, keyPath)
 }
-let handleClose = (key, keyPath) => {
+const handleClose = (key, keyPath) => {
   // console.log(key, keyPath)
+}
+const openGiteeIssues = () => {
+  window.open('https://gitee.com/fyade/yalink-admin/issues')
 }
 </script>
 
 <template>
   <el-menu
       class="el-menu-vertical-demo"
+      style="display: flex;flex-direction: column;"
+      background-color="#304156"
+      text-color="#fff"
+      active-text-color="#409eff"
       :default-active="defaultActiveRef"
       router
+      unique-opened
       @open="handleOpen"
       @close="handleClose"
   >
@@ -102,6 +110,14 @@ let handleClose = (key, keyPath) => {
       <el-menu-item :index="`/t3/t32`">t32</el-menu-item>
       <el-menu-item :index="`/t3/t33`">t33</el-menu-item>
     </el-sub-menu>-->
+    <div style="display: flex;height: 60px;color: #fff;user-select: none;">
+      <span style="margin: auto;">雅链后台管理系统</span>
+    </div>
+    <el-menu-item class="menuitem-1" index="/">
+      <span>首页</span>
+    </el-menu-item>
+
+    <!--动态渲染-->
     <template v-for="(item,i) in menuRea.list" :key="i">
       <template v-if="item.children.length===0">
         <el-menu-item :index="item.mePath">
@@ -113,15 +129,33 @@ let handleClose = (key, keyPath) => {
           <template #title>
             <span>{{ item.meName }}</span>
           </template>
-          <el-menu-item v-for="(iitem,j) in item.children" :key="j" :index="item.mePath+iitem.mePath">
+          <el-menu-item class="submenu menuitem-2" v-for="(iitem,j) in item.children" :key="j"
+                        :index="item.mePath+iitem.mePath">
             {{ iitem.meName }}
           </el-menu-item>
         </el-sub-menu>
       </template>
     </template>
+    <!--动态渲染-->
+
+    <div style="flex: 1;"></div>
+
+    <el-menu-item class="menuitem-1" @click="openGiteeIssues">
+      <span>问题反馈</span>
+    </el-menu-item>
   </el-menu>
 </template>
 
 <style scoped lang="scss">
+.menuitem-1:hover {
+  background-color: #2d3d51;
+}
 
+.menuitem-2:hover {
+  background-color: #001528;
+}
+
+.submenu {
+  background-color: #1f2d3d;
+}
 </style>

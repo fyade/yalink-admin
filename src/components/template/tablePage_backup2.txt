@@ -1,8 +1,10 @@
 <script setup>
 import { reactive, ref } from "vue"
-import { final, publicDict } from "utils/base.js"
+import { usePageStore } from "store/page.js"
+import { final, Operate, publicDict, shift_yes_no } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
 import { funcTablePage } from "@/composition/template/tablePage/index.js"
+import { ElMessage } from "element-plus"
 
 let state = reactive({
   dialogVisible: false,
@@ -43,69 +45,110 @@ let state = reactive({
   multipleSelection: [],
   total: -1
 })
-let state2 = reactive({
-  orderNum: 0
-})
 let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = reactive({
-  mountedGetData: true, // 页面加载时获取数据
-  pageQuery: true, // 是否分页
-  selectParam: {} // 查询参数（补充
-})
 
-const func = {
-  /**
-   * 查询列表
-   * @param params
-   */
-  selectList: params => {
-    // return func(params)
-  },
-  /**
-   * 查询单个
-   * @param id
-   */
-  selectById: id => {
-    // return func(id)
-  },
-  /**
-   * 新增
-   * @param obj
-   */
-  insertOne: obj => {
-    // return func(obj)
-  },
-  /**
-   * 修改
-   * @param obj
-   */
-  updateOne: obj => {
-    // return func(obj)
-  },
-  /**
-   * 修改顺序
-   * @param ids
-   */
-  updateOrder: (...ids) => {
-    // return func(...ids)
-  },
-  /**
-   * 启用禁用
-   * @param objs
-   */
-  updateDisabled: (...objs) => {
-    // return func(...objs)
-  },
-  /**
-   * 删除
-   * @param ids
-   */
-  deleteList: (...ids) => {
-    // return func(...ids)
-  }
+/**
+ * 查询
+ */
+const getData = () => {
+  tableLoadingRef.value = true
+  state.list = []
+  let obj = { ...usePageStore().getPage, ...state.filterForm }
+  // funcSelList(obj).then(res => {
+  //   // 普通查询
+  //   state.list = res.data
+  //   // 分页查询
+  //   state.list = res.data.list
+  //   state.total = res.data.total
+  // }).finally(() => {
+  tableLoadingRef.value = false
+  // })
+}
+/**
+ * 查询单个
+ * @param id
+ */
+const getDataById = id => {
+  tableLoadingRef.value = true
+  // funcSelOne(id).then(res => {
+  //   state.list[state.list.findIndex(item => item.id === id)] = res.data
+  // }).finally(() => {
+  tableLoadingRef.value = false
+  // })
+}
+/**
+ * 新增
+ */
+const insData = () => {
+  let obj = state.dialogForm
+  // funcInsOne(obj).then(res => {
+  //   if (res.code === 200) {
+  //     ElMessage.success(Operate.success)
+  //     state.dialogVisible = false
+  //     getData()
+  //   }
+  // })
+}
+/**
+ * 修改
+ */
+const updData = () => {
+  let obj = state.dialogForm
+  // funcUpdOne(obj).then(res => {
+  //   if (res.code === 200) {
+  //     ElMessage.success(Operate.success)
+  //     state.dialogVisible = false
+  //     getData()
+  //   }
+  // })
+}
+/**
+ * 修改顺序
+ * @param ids
+ */
+const updDataOrder = (...ids) => {
+  // funcUpdOrder(...ids).then(res => {
+  //   if (res.code === 200) {
+  //     ElMessage.success(Operate.success)
+  //     getData()
+  //   }
+  // })
+}
+/**
+ * 修改禁用状态
+ * @param objs
+ */
+const updDataDisabled = (...objs) => {
+  tableLoadingRef.value = true
+  // funcUpdDisabled(...objs).then(res => {
+  //   getData()
+  // }).finally(() => {
+  tableLoadingRef.value = false
+  // })
+}
+/**
+ * 修改单个禁用状态
+ * 数据列表内开关专用，请勿删除
+ * @param id
+ */
+const updDataDisabledById = id => {
+  let obj = state.list.find(item => item.id === id)
+  obj.disabled = shift_yes_no[obj.disabled]
+  // return funcUpdOne(obj)
+}
+/**
+ * 删除
+ */
+const delData = (...ids) => {
+  // funcDelList(...ids).then(res => {
+  //   if (res.code === 200) {
+  //     ElMessage.success(Operate.success)
+  //     getData()
+  //   }
+  // })
 }
 
 const {
@@ -125,18 +168,21 @@ const {
   tDel,
   tBeforeChange,
   handleSelectionChange,
-  handlerFocus,
-  handleOrderNumChange,
   pageChange
 } = funcTablePage(
-    config,
     state,
-    state2,
     dialogFormRef,
     filterFormRef,
     tableLoadingRef,
     switchLoadingRef,
-    func
+    getData,
+    getDataById,
+    insData,
+    updData,
+    updDataOrder,
+    updDataDisabled,
+    updDataDisabledById,
+    delData
 )
 </script>
 
@@ -233,17 +279,7 @@ const {
     <!--在此下方添加表格列-->
     <!--<el-table-column prop="" :label="state.dict['']" width="120"/>-->
     <!--在此上方添加表格列-->
-    <!--<el-table-column prop="orderNum" :label="state.dict['orderNum']" width="180">-->
-    <!--  <template #default="{row}">-->
-    <!--    <el-input-number-->
-    <!--        v-model="row.orderNum"-->
-    <!--        step-strictly-->
-    <!--        :value-on-clear="state2.orderNum"-->
-    <!--        @focus="handlerFocus(row.orderNum)"-->
-    <!--        @change="handleOrderNumChange(row.id)"-->
-    <!--    />-->
-    <!--  </template>-->
-    <!--</el-table-column>-->
+    <!--<el-table-column prop="orderNum" :label="state.dict['orderNum']" width="60"/>-->
     <!--<el-table-column :label="state.dict['disabled']" width="80">-->
     <!--  <template #default="{row}">-->
     <!--    <el-switch-->

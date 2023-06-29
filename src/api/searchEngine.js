@@ -21,6 +21,18 @@ export function selAll({ pageNum, pageSize, name, descr, url, secondLevelUrl, pa
 }
 
 /**
+ * 获取单个
+ * @param id
+ * @returns {*}
+ */
+export function selOne(id) {
+  return ax({
+    url: `/admin/search-engine/${id}`,
+    method: 'GET'
+  })
+}
+
+/**
  * 新增
  * @param name
  * @param descr
@@ -30,7 +42,7 @@ export function selAll({ pageNum, pageSize, name, descr, url, secondLevelUrl, pa
  * @param orderNum
  * @returns {*}
  */
-export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum }) {
+export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum, disabled }) {
   return ax({
     url: '/admin/search-engine',
     method: 'POST',
@@ -40,7 +52,8 @@ export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum })
       url,
       secondLevelUrl,
       paramKey,
-      orderNum
+      orderNum,
+      disabled
     }
   });
 }
@@ -83,6 +96,20 @@ export function updOrder(...ids) {
     url: '/admin/search-engine/order-num',
     method: 'POST',
     data: ids
+  })
+}
+
+/**
+ * 启用禁用
+ * objs格式为{id:'',disabled:''}
+ * @param objs
+ * @returns {*}
+ */
+export function updDisabled(...objs) {
+  return ax({
+    url: '/admin/search-engine/disabled',
+    method: 'POST',
+    data: objs
   })
 }
 
