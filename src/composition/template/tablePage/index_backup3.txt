@@ -115,14 +115,16 @@ export const funcTablePage = (
   }
 
   onMounted(() => {
-    if (config.mountedGetData) getData()
+    if (!!!config.notGetDataOnMounted) getData()
   })
-  watch(() => state.dialogVisible, (newVal) => {
-    if (newVal) {
-    } else {
-      dialogFormRef.value?.resetFields();
-    }
-  })
+  if (!!!config.watchDialogVisible) {
+    watch(() => state.dialogVisible, (newVal) => {
+      if (newVal) {
+      } else {
+        dialogFormRef.value?.resetFields()
+      }
+    })
+  }
 
   // 弹窗取消
   const dCan = () => {
@@ -148,6 +150,15 @@ export const funcTablePage = (
         ElMessage.warning(`${arr.join('、')}不能为空`)
       }
     })
+  }
+  // 筛选
+  const fEnter = () => {
+    let hasValue = Object.values(state.filterForm).some(item => !!item.toString().trim())
+    if (hasValue) {
+      fCon()
+    } else {
+      fCan()
+    }
   }
   // 筛选
   const fCon = () => {
@@ -281,6 +292,7 @@ export const funcTablePage = (
     return new Promise((resolve, reject) => {
       updDataDisabledById(id).then(res => {
         if (res.code === 200) {
+          ElMessage.success(Operate.success)
           resolve(true)
         } else {
           reject(false)
@@ -314,6 +326,7 @@ export const funcTablePage = (
   return {
     dCan,
     dCon,
+    fEnter,
     fCon,
     fCan,
     gIns,

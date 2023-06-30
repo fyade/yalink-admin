@@ -1,10 +1,12 @@
 <script setup>
 import { nextTick, reactive, ref, watch } from "vue"
-import { cascaderProps2, final, publicDict, shift_yes_no } from "utils/base.js"
+import { cascaderProps2, final, Operate, publicDict, shift_yes_no } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
 import { funcTablePage } from "@/composition/template/tablePage/index.js"
 import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminSort.js'
-import { flatObjectArray } from "utils/DataUtils.js";
+import { flatObjectArray } from "utils/dataUtils.js";
+import { ElMessage } from "element-plus";
+import { usePageStore } from "store/page.js";
 
 let state = reactive({
   dialogVisible: false,
@@ -65,9 +67,7 @@ let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = {
-  mountedGetData: true, // 页面加载时获取数据
-  pageQuery: false // 是否分页
+let config = {
 }
 
 const func = {
@@ -126,6 +126,12 @@ watch(() => state.list, () => {
   state.allList = flatObjectArray(state.list)
 })
 
+const tAdd = id => {
+  state.type.value = 'ins'
+  state.type.label = '新增'
+  state.dialogVisible = true
+  state.dialogForm.parentId = id
+}
 const tUpd = id => {
   state.type.value = 'upd'
   state.type.label = '修改'
@@ -144,6 +150,7 @@ const tBeforeChange = id => {
     obj.disabled = shift_yes_no[obj.disabled]
     func.updateOne(obj).then(res => {
       if (res.code === 200) {
+        ElMessage.success(Operate.success)
         resolve(true)
       } else {
         reject(false)
@@ -156,15 +163,41 @@ const tBeforeChange = id => {
     })
   })
 }
+const handleOrderNumChange = id => {
+  func.updateOne(state.allList.find(item => item.id === id)).then(res => {
+    if (res.code === 200) {
+      ElMessage.success(Operate.success)
+      state.dialogVisible = false
+      getData()
+    }
+  })
+}
+const getData = () => {
+  tableLoadingRef.value = true
+  state.list = []
+  let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
+  func.selectList(obj).then(res => {
+    if (config.pageQuery) {
+      state.list = res.data.list
+      state.total = res.data.total
+    } else {
+      state.list = res.data
+    }
+  }).finally(() => {
+    tableLoadingRef.value = false
+  })
+}
 
 const {
   dCan,
   dCon,
+  fEnter,
   fCon,
   fCan,
   gIns,
   tDel,
   handleSelectionChange,
+  handlerFocus,
   pageChange
 } = funcTablePage(
     config,
@@ -193,7 +226,7 @@ const {
         :rules="state.dFormRules"
     >
       <el-form-item v-if="state.type.value!=='ins'" :label="state.dict['id']" prop="id">
-        <span>{{ state.dialogForm.id }}</span>
+        <span>{{ state.dialogForm['id'] }}</span>
       </el-form-item>
       <!--在此下方添加表单项-->
       <el-form-item :label="state.dict['name']" prop="name">
@@ -218,7 +251,7 @@ const {
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
       <el-form-item :label="state.dict['disabled']" prop="disabled">
-        <el-switch v-model="state.dialogForm.disabled" :active-value="final.DISABLED_NO"
+        <el-switch v-model="state.dialogForm['disabled']" :active-value="final.DISABLED_NO"
                    :inactive-value="final.DISABLED_YES"/>
       </el-form-item>
       <!--上方几个酌情使用-->
@@ -238,7 +271,7 @@ const {
       ref="filterFormRef"
       :model="state.filterForm"
       :inline="true"
-      @keyup.enter="fCon"
+      @keyup.enter="fEnter"
   >
     <!--在此下方添加表单项-->
     <!--<el-form-item :label="state.dict['']" prop="">-->
@@ -291,7 +324,17 @@ const {
     <el-table-column prop="name" :label="state.dict['name']" width="200"/>
     <el-table-column prop="descr" :label="state.dict['descr']" width="200"/>
     <!--在此上方添加表格列-->
-    <el-table-column prop="orderNum" :label="state.dict['orderNum']" width="60"/>
+    <el-table-column prop="orderNum" :label="state.dict['orderNum']" width="180">
+      <template #default="{row}">
+        <el-input-number
+            v-model="state.allList.find(i=>i.id===row.id).orderNum"
+            step-strictly
+            :value-on-clear="state2.orderNum"
+            @focus="handlerFocus(row.orderNum)"
+            @change="handleOrderNumChange(row.id)"
+        />
+      </template>
+    </el-table-column>
     <el-table-column :label="state.dict['disabled']" width="80">
       <template #default="{row}">
         <el-switch
@@ -310,6 +353,7 @@ const {
     <!--上方几个酌情使用-->
     <el-table-column fixed="right" label="操作" min-width="120">
       <template #default="{row}">
+        <el-button v-no-more-click link type="primary" size="small" @click="tAdd(row.id)">新增</el-button>
         <el-button v-no-more-click link type="primary" size="small" @click="tUpd(row.id)">修改</el-button>
         <el-button v-no-more-click link type="danger" size="small" @click="tDel(row.id)">删除</el-button>
       </template>

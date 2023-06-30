@@ -2,7 +2,7 @@
 import { selAll, insOne, altOne, delOne } from 'api/sec/secMenu.js';
 import { onMounted, reactive, ref, unref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from "element-plus";
-import { deepRecursion, flatObjectArray } from 'utils/DataUtils.js';
+import { deepRecursion, flatObjectArray } from 'utils/dataUtils.js';
 
 let formRef = ref(null);
 onMounted(() => getInfo());

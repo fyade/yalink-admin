@@ -5,7 +5,7 @@ import { selRole } from 'api/sec/secRole.js';
 import { onMounted, reactive, ref, watch } from 'vue';
 import useStore from 'store';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { deepRecursion, flatObjectArray } from 'utils/DataUtils.js';
+import { deepRecursion, flatObjectArray } from 'utils/dataUtils.js';
 import Pagination from 'comp/pagination/Pagination.vue';
 
 const store = useStore();

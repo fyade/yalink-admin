@@ -55,7 +55,7 @@ const routes = [
   },
   {
     path: '/test',
-    component: () => import('comp/template/tablePage.vue')
+    component: () => import('comp/template/TablePage.vue')
   },
   {
     path: '/403',

@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, reactive } from "vue"
-import { deepRecursion } from "utils/DataUtils.js"
+import { deepRecursion } from "utils/dataUtils.js"
 import { selList as selSortList } from 'api/admin/adminSort.js'
 import LinkOfSort from "views/pages/link/LinkOfSort.vue";
 

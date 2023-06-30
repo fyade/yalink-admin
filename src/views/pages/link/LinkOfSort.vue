@@ -28,7 +28,7 @@ let state = reactive({
     docUrl: '',
     siteSearch: '',
     orderNum: 0,
-    sortId: '',
+    sortId: final.DEFAULT_PARENT_ID,
     disabled: final.DISABLED_NO
   },
   // 这个是弹出框表单校验
@@ -80,12 +80,13 @@ let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = reactive({
-  mountedGetData: false, // 页面加载时获取数据
-  pageQuery: true, // 是否分页
+let config = reactive({
   selectParam: {
     sortId: ''
-  } // 查询参数（补充
+  }, // 查询参数（补充
+  notGetDataOnMounted: true, // 页面加载时不获取数据，默认false
+  pageQuery: true, // 是否分页，默认false
+  watchDialogVisible: false // 监听dialogVisible变化，默认true
 })
 
 let props = defineProps({
@@ -94,6 +95,13 @@ let props = defineProps({
   },
   listSort: {
     type: Array
+  }
+})
+watch(() => state.dialogVisible, (newVal) => {
+  if (newVal) {
+  } else {
+    dialogFormRef.value?.resetFields()
+    state.dialogForm.sortId = config.selectParam.sortId
   }
 })
 watch(() => props.sortId, () => {
@@ -250,6 +258,7 @@ const {
         <el-input-number v-model="state.dialogForm.orderNum"/>
       </el-form-item>
       <el-form-item :label="state.dict['sortId']" prop="sortId">
+        {{state.dialogForm.sortId}}
         <el-cascader
             v-model="state.dialogForm.sortId"
             :options="props.listSort"

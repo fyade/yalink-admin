@@ -78,8 +78,7 @@ let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = {
-  mountedGetData: true, // 页面加载时获取数据
+let config = {
   pageQuery: true // 是否分页
 }
 
@@ -138,6 +137,7 @@ const func = {
 const {
   dCan,
   dCon,
+  fEnter,
   fCon,
   fCan,
   gIns,
@@ -186,19 +186,19 @@ const {
       </el-form-item>
       <!--在此下方添加表单项-->
       <el-form-item :label="state.dict['name']" prop="name">
-        <el-input v-model="state.dialogForm.name"/>
+        <el-input v-model="state.dialogForm.name" :placeholder="state.dict['name']"/>
       </el-form-item>
       <el-form-item :label="state.dict['descr']" prop="descr">
-        <el-input type="textarea" v-model="state.dialogForm.descr"/>
+        <el-input type="textarea" v-model="state.dialogForm.descr" :placeholder="state.dict['descr']"/>
       </el-form-item>
       <el-form-item :label="state.dict['url']" prop="url">
-        <el-input v-model="state.dialogForm.url"/>
+        <el-input v-model="state.dialogForm.url" :placeholder="state.dict['url']"/>
       </el-form-item>
       <el-form-item :label="state.dict['secondLevelUrl']" prop="secondLevelUrl">
-        <el-input v-model="state.dialogForm.secondLevelUrl"/>
+        <el-input v-model="state.dialogForm.secondLevelUrl" :placeholder="state.dict['secondLevelUrl']"/>
       </el-form-item>
       <el-form-item :label="state.dict['paramKey']" prop="paramKey">
-        <el-input v-model="state.dialogForm.paramKey"/>
+        <el-input v-model="state.dialogForm.paramKey" :placeholder="state.dict['paramKey']"/>
       </el-form-item>
       <el-form-item :label="state.dict['orderNum']" prop="orderNum">
         <el-input-number v-model="state.dialogForm.orderNum"/>
@@ -225,7 +225,7 @@ const {
       ref="filterFormRef"
       :model="state.filterForm"
       :inline="true"
-      @keyup.enter="fCon"
+      @keyup.enter="fEnter"
   >
     <!--在此下方添加表单项-->
     <el-form-item :label="state.dict['name']" prop="name">

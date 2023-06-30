@@ -50,10 +50,11 @@ let dialogFormRef = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
-const config = reactive({
-  mountedGetData: true, // 页面加载时获取数据
-  pageQuery: true, // 是否分页
-  selectParam: {} // 查询参数（补充
+let config = reactive({
+  selectParam: {}, // 查询参数（补充
+  notGetDataOnMounted: false, // 页面加载时不获取数据，默认false
+  pageQuery: false, // 是否分页，默认false
+  watchDialogVisible: true // 监听dialogVisible变化，默认true
 })
 
 const func = {
@@ -111,6 +112,7 @@ const func = {
 const {
   dCan,
   dCon,
+  fEnter,
   fCon,
   fCan,
   gIns,
@@ -155,15 +157,15 @@ const {
         :rules="state.dFormRules"
     >
       <el-form-item v-if="state.type.value!=='ins'" :label="state.dict['id']" prop="id">
-        <span>{{ state.dialogForm.id }}</span>
+        <span>{{ state.dialogForm['id'] }}</span>
       </el-form-item>
       <!--在此下方添加表单项-->
       <!--<el-form-item :label="state.dict['']" prop="">-->
-      <!--  <el-input v-model="state.dialogForm."/>-->
+      <!--  <el-input v-model="state.dialogForm['']" :placeholder="state.dict['']"/>-->
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
       <!--<el-form-item :label="state.dict['disabled']" prop="disabled">-->
-      <!--  <el-switch v-model="state.dialogForm.disabled" :active-value="final.DISABLED_NO"-->
+      <!--  <el-switch v-model="state.dialogForm['disabled']" :active-value="final.DISABLED_NO"-->
       <!--             :inactive-value="final.DISABLED_YES"/>-->
       <!--</el-form-item>-->
       <!--上方几个酌情使用-->
@@ -183,7 +185,7 @@ const {
       ref="filterFormRef"
       :model="state.filterForm"
       :inline="true"
-      @keyup.enter="fCon"
+      @keyup.enter="fEnter"
   >
     <!--在此下方添加表单项-->
     <!--<el-form-item :label="state.dict['']" prop="">-->
