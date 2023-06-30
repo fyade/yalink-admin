@@ -354,7 +354,7 @@ const {
     <el-table-column prop="siteSearch" :label="state.dict['siteSearch']" width="240"/>
     <el-table-column prop="ico" :label="state.dict['ico']" width="60">
       <template #default="{row}">
-        <el-image :src="row.ico" fit="contain"/>
+        <el-image :src="row.ico" fit="contain" lazy/>
       </template>
     </el-table-column>
     <!--在此上方添加表格列-->

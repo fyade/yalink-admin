@@ -19,7 +19,8 @@
     "unplugin-auto-import": "^0.16.4",
     "unplugin-vue-components": "^0.25.1",
     "vue": "^3.2.47",
-    "vue-router": "^4.2.2"
+    "vue-router": "^4.2.2",
+    "vue3-lazy": "^1.0.0-alpha.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",

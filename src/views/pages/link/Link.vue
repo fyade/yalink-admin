@@ -26,6 +26,7 @@ const handleNodeClick = (data) => {
     <el-aside width="200px">
       <el-tree
           :data="state.list_sort"
+          highlight-current
           @node-click="handleNodeClick"
       />
     </el-aside>
