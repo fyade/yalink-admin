@@ -99,9 +99,9 @@ let props = defineProps({
 })
 watch(() => state.dialogVisible, (newVal) => {
   if (newVal) {
+    state.dialogForm.sortId = config.selectParam.sortId
   } else {
     dialogFormRef.value?.resetFields()
-    state.dialogForm.sortId = config.selectParam.sortId
   }
 })
 watch(() => props.sortId, () => {
@@ -258,7 +258,6 @@ const {
         <el-input-number v-model="state.dialogForm.orderNum"/>
       </el-form-item>
       <el-form-item :label="state.dict['sortId']" prop="sortId">
-        {{state.dialogForm.sortId}}
         <el-cascader
             v-model="state.dialogForm.sortId"
             :options="props.listSort"
