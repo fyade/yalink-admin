@@ -2,7 +2,6 @@
 import { selRole, insRole, altRole, delRole } from 'api/sec/secRole.js';
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { deepClone } from 'utils/objectUtils.js';
 
 let formRef = ref(null);
 onMounted(() => getInfo());
@@ -51,7 +50,7 @@ let befAdd = () => {
 let befAlt = id => {
   typeRea.value = 'edit';
   typeRea.label = '编辑';
-  infoRea.editingVal = deepClone(infoRea.roleList.find(item => item.id === id));
+  infoRea.editingVal = structuredClone(infoRea.roleList.find(item => item.id === id));
   dialogVisibleRef.value = true;
 }
 let del = id => {

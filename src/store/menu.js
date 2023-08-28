@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
+import { final } from "utils/base.js";
 
 export const useMenuStore = defineStore('menu', () => {
   let menus = reactive({
@@ -13,8 +14,8 @@ export const useMenuStore = defineStore('menu', () => {
 
   let setMenus = infoArr => {
     menus.origin = infoArr;
-    let arr_p = infoArr.filter(item => item.meParentId === '0');
-    let arr_o = infoArr.filter(item => item.meParentId !== '0');
+    let arr_p = infoArr.filter(item => item.meParentId === final.DEFAULT_PARENT_ID);
+    let arr_o = infoArr.filter(item => item.meParentId !== final.DEFAULT_PARENT_ID);
     for (let i = 0; i < arr_p.length; i++) {
       insChildren(arr_p[i], arr_o);
     }

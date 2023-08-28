@@ -1,4 +1,4 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 登录
@@ -7,8 +7,8 @@ import ax from 'utils/request.js';
  * @returns {*}
  */
 export function userLogin(username, password) {
-  return ax({
-    url: '/admin/admin/login',
+  return request({
+    url: '/admin/admin/login/up',
     method: 'POST',
     data: {
       username,

@@ -1,11 +1,11 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 获取用户角色信息列表，包含用户信息和角色信息
  * @returns {*}
  */
 export function selAllNest(pagination) {
-  return ax({
+  return request({
     url: '/admin/sec/user-role/ur-join-u-r',
     method: 'GET',
     params: pagination
@@ -19,7 +19,7 @@ export function selAllNest(pagination) {
  * @returns {*}
  */
 export function insOne({ userId, roleId }) {
-  return ax({
+  return request({
     url: '/admin/sec/user-role',
     method: 'POST',
     data: {
@@ -37,7 +37,7 @@ export function insOne({ userId, roleId }) {
  * @returns {*}
  */
 export function altOne({ id, userId, roleId }) {
-  return ax({
+  return request({
     url: '/admin/sec/user-role',
     method: 'PUT',
     data: {
@@ -54,7 +54,7 @@ export function altOne({ id, userId, roleId }) {
  * @returns {*}
  */
 export function delOne(userId) {
-  return ax({
+  return request({
     url: `/admin/sec/user-role/${userId}`,
     method: 'DELETE'
   });
@@ -69,7 +69,7 @@ export function delOne(userId) {
  * @returns {*}
  */
 export function updByList(userId, roleList) {
-  return ax({
+  return request({
     url: '/admin/sec/user-role/update-with-list',
     method: 'POST',
     data: {

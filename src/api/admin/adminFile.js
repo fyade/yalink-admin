@@ -1,4 +1,4 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 import useStore from 'store';
 
 const store = useStore();
@@ -10,7 +10,7 @@ const store = useStore();
  * @returns {*}
  */
 export function selFileUploadLog(pageNum = store.page.getPageNum, pageSize = store.page.getPageSize) {
-  return ax({
+  return request({
     url: '/admin/file/select-image-log',
     method: 'POST',
     data: {

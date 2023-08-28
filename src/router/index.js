@@ -1,12 +1,17 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import useStore from 'store';
-import { selMenusOfCurrent } from 'api/sec/secMenu.js';
+import { createRouter, createWebHistory } from 'vue-router'
+import useStore from 'store'
+import { selMenusOfCurrent } from 'api/sec/secMenu.js'
+import { final } from "utils/base.js";
 
 const routes = [
   {
     path: '/',
-    component: () => import('@/layout/index.vue'),
+    component: () => import('@/layout/Layout.vue'),
     children: [
+      {
+        path: '',
+        component: () => import('views/home/Home.vue')
+      },
       {
         path: 'sec/role',
         component: () => import('views/pages/sec/Role.vue')
@@ -28,12 +33,24 @@ const routes = [
         component: () => import('views/pages/searchengine/SearchEngine.vue')
       },
       {
-        path: 'sort',
+        path: 'sort/list',
         component: () => import('views/pages/sort/Sort.vue')
       },
       {
-        path: 'link',
+        path: 'sort/apply',
+        component: () => import('views/pages/sort/SortApply.vue')
+      },
+      {
+        path: 'link/list',
         component: () => import('views/pages/link/Link.vue')
+      },
+      {
+        path: 'link/apply',
+        component: () => import('views/pages/link/LinkApply.vue')
+      },
+      {
+        path: 'dict',
+        component: () => import('views/pages/dict/Dict.vue')
       },
       {
         path: 'user/user',
@@ -51,34 +68,34 @@ const routes = [
   },
   {
     path: '/login',
-    component: () => import('views/login/index.vue')
-  },
-  {
-    path: '/test',
-    component: () => import('comp/template/TablePage.vue')
+    component: () => import('views/login/Login.vue')
   },
   {
     path: '/403',
-    component: () => import('comp/error/403.vue')
+    component: () => import('views/error/403.vue')
   },
   {
     path: '/404',
-    component: () => import('comp/error/404.vue')
+    component: () => import('views/error/404.vue')
   },
-  // {
-  //   path: '*',
-  //   component: () => import('comp/error/404.vue')
-  // }
+  {
+    path: '/:pathMatch(.*)',
+    redirect: `/404`
+  }
 ]
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes: routes
-});
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 始终滚动到顶部
+    return { top: 0 }
+  }
+})
 
 const whiteList = ['/403', '/404']
 router.beforeEach((to, from, next) => {
-  useStore().page.init();
+  useStore().page.init()
   if (whiteList.includes(to.path)) {
     next()
   } else if (!useStore().user.isLogin && to.path !== '/login') {
@@ -86,28 +103,27 @@ router.beforeEach((to, from, next) => {
       path: '/login',
       query: {
         redirect: to.path
-      },
-      replace: true
-    });
+      }
+    })
   } else if (to.path === '/login') {
-    next();
+    next()
   } else {
     selMenusOfCurrent().then(res => {
-      let tp = to.path.substring('/admin'.length);
-      let menuList = res.data;
-      useStore().menu.setMenus(menuList);
-      let reg = /^(?!^\/.*-$)(?!^\/-.*$)(?!.*(--).*)\/[a-z0-9-]+/;
-      let arr = [];
-      let l = tp.match(/\//g, '')?.length ?? 0;
+      let tp = to.path.substring('/admin'.length)
+      let menuList = res.data
+      useStore().menu.setMenus(menuList)
+      let reg = /^(?!^\/.*-$)(?!^\/-.*$)(?!.*(--).*)\/[a-z0-9-]+/
+      let arr = []
+      let l = tp.match(/\//g, '')?.length ?? 0
       if (tp !== '') {
         for (let i = 0; i < l; i++) {
-          let find = menuList.find(item => item.meParentId === (i === 0 ? '0' : arr[i - 1].meId) && item.mePath === tp.match(reg)[0]);
+          let find = menuList.find(item => item.meParentId === (i === 0 ? final.DEFAULT_PARENT_ID : arr[i - 1].meId) && item.mePath === tp.match(reg)[0])
           if (!!find) {
-            arr.push(find);
+            arr.push(find)
           } else {
-            break;
+            break
           }
-          tp = tp.substring(tp.match(reg)[0].length);
+          tp = tp.substring(tp.match(reg)[0].length)
         }
       }
       if (l === arr.length) {
@@ -138,4 +154,4 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-export default router;
+export default router

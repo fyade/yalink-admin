@@ -1,8 +1,8 @@
 <script setup>
 import { reactive, ref } from "vue"
-import { final, publicDict } from "utils/base.js"
+import { final, publicDict, shift_yes_no } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
-import { funcTablePage } from "@/composition/template/tablePage/index.js"
+import { funcTablePage } from "@/composition/tablePage/tablePage.js"
 
 let state = reactive({
   dialogVisible: false,
@@ -13,6 +13,7 @@ let state = reactive({
   // 这个是弹出框表单
   // 格式: {
   //   id: '',
+  //   isDefault: final.IS_DEFAULT_YES,
   //   disabled: final.DISABLED_NO,
   //   parentId: final.DEFAULT_PARENT_ID,
   //   ...
@@ -20,7 +21,7 @@ let state = reactive({
   dialogForm: {},
   // 这个是弹出框表单校验
   // 格式: {
-  //   name: [{ required: true }],
+  //   name: [{ required: true, trigger: 'blur' }],
   //   ...
   // }
   dFormRules: {},
@@ -47,14 +48,16 @@ let state2 = reactive({
   orderNum: 0
 })
 let dialogFormRef = ref(null)
+let dialogFormInput1Ref = ref(null)
 let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
 let config = reactive({
   selectParam: {}, // 查询参数（补充
-  notGetDataOnMounted: false, // 页面加载时不获取数据，默认false
-  pageQuery: false, // 是否分页，默认false
-  watchDialogVisible: true // 监听dialogVisible变化，默认true
+  getDataOnMounted: true, // 页面加载时获取数据，默认true
+  pageQuery: true, // 分页，默认true
+  watchDialogVisible: true, // 监听dialogVisible变化，默认true
+  tableInlineOperate: true // 允许表格行内操作，默认true
 })
 
 const func = {
@@ -110,11 +113,13 @@ const func = {
 }
 
 const {
+  refresh,
   dCan,
   dCon,
   fEnter,
   fCon,
   fCan,
+  gRefresh,
   gIns,
   gUpd,
   gDel,
@@ -125,21 +130,23 @@ const {
   gDisabledShift,
   tUpd,
   tDel,
-  tBeforeChange,
+  tBeforeChangeDisabled,
+  tBeforeChangeIsDefault,
   handleSelectionChange,
   handlerFocus,
   handleOrderNumChange,
   pageChange
-} = funcTablePage(
-    config,
-    state,
-    state2,
-    dialogFormRef,
-    filterFormRef,
-    tableLoadingRef,
-    switchLoadingRef,
-    func
-)
+} = funcTablePage({
+  config,
+  state,
+  state2,
+  dialogFormRef,
+  dialogFormInput1Ref,
+  filterFormRef,
+  tableLoadingRef,
+  switchLoadingRef,
+  func
+})
 </script>
 
 <template>
@@ -159,11 +166,22 @@ const {
       <el-form-item v-if="state.type.value!=='ins'" :label="state.dict['id']" prop="id">
         <span>{{ state.dialogForm['id'] }}</span>
       </el-form-item>
+      <!--
+      第一个input添加如下属性
+      ref="dialogFormInput1Ref"
+      -->
       <!--在此下方添加表单项-->
       <!--<el-form-item :label="state.dict['']" prop="">-->
       <!--  <el-input v-model="state.dialogForm['']" :placeholder="state.dict['']"/>-->
       <!--</el-form-item>-->
       <!--在此上方添加表单项-->
+      <!--<el-form-item :label="state.dict['orderNum']" prop="orderNum">-->
+      <!--  <el-input-number v-model="state.dialogForm['orderNum']"/>-->
+      <!--</el-form-item>-->
+      <!--<el-form-item :label="state.dict['isDefault']" prop="isDefault">-->
+      <!--  <el-switch v-model="state.dialogForm['isDefault']" :active-value="final.IS_DEFAULT_YES"-->
+      <!--             :inactive-value="final.IS_DEFAULT_NO"/>-->
+      <!--</el-form-item>-->
       <!--<el-form-item :label="state.dict['disabled']" prop="disabled">-->
       <!--  <el-switch v-model="state.dialogForm['disabled']" :active-value="final.DISABLED_NO"-->
       <!--             :inactive-value="final.DISABLED_YES"/>-->
@@ -201,23 +219,32 @@ const {
   <!--操作按钮-->
   <div style="display: flex;flex-wrap: wrap;gap: 1rem;">
     <el-button-group>
+      <el-button v-no-more-click plain @click="gRefresh">刷新</el-button>
       <el-button v-no-more-click type="primary" plain @click="gIns">新增</el-button>
-      <el-button v-no-more-click type="success" plain :disabled="state.multipleSelection.length!==1" @click="gUpd">修改
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length!==1}" type="success" plain
+                 :disabled="state.multipleSelection.length!==1" @click="gUpd">修改
       </el-button>
-      <el-button v-no-more-click type="danger" plain :disabled="state.multipleSelection.length===0" @click="gDel">删除
-      </el-button>
-    </el-button-group>
-    <el-button-group>
-      <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveUp">上移</el-button>
-      <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveDown">下移
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" type="danger" plain
+                 :disabled="state.multipleSelection.length===0" @click="gDel">删除
       </el-button>
     </el-button-group>
     <el-button-group>
-      <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledToNo">启用
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain
+                 :disabled="state.multipleSelection.length===0" @click="gMoveUp">上移
       </el-button>
-      <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledToYes">禁用
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain
+                 :disabled="state.multipleSelection.length===0" @click="gMoveDown">下移
       </el-button>
-      <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledShift">切换
+    </el-button-group>
+    <el-button-group>
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain
+                 :disabled="state.multipleSelection.length===0" @click="gDisabledToNo">启用
+      </el-button>
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain
+                 :disabled="state.multipleSelection.length===0" @click="gDisabledToYes">禁用
+      </el-button>
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain
+                 :disabled="state.multipleSelection.length===0" @click="gDisabledShift">切换
       </el-button>
     </el-button-group>
   </div>
@@ -238,23 +265,40 @@ const {
     <!--<el-table-column prop="orderNum" :label="state.dict['orderNum']" width="180">-->
     <!--  <template #default="{row}">-->
     <!--    <el-input-number-->
+    <!--        v-if="config.tableInlineOperate"-->
     <!--        v-model="row.orderNum"-->
     <!--        step-strictly-->
     <!--        :value-on-clear="state2.orderNum"-->
     <!--        @focus="handlerFocus(row.orderNum)"-->
     <!--        @change="handleOrderNumChange(row.id)"-->
     <!--    />-->
+    <!--    <template v-else>{{ row['orderNum'] }}</template>-->
+    <!--  </template>-->
+    <!--</el-table-column>-->
+    <!--<el-table-column :label="state.dict['isDefault']" width="80">-->
+    <!--  <template #default="{row}">-->
+    <!--    <el-switch-->
+    <!--        v-if="config.tableInlineOperate"-->
+    <!--        v-model="row.isDefault"-->
+    <!--        :loading="switchLoadingRef"-->
+    <!--        :active-value="final.IS_DEFAULT_YES"-->
+    <!--        :inactive-value="final.IS_DEFAULT_NO"-->
+    <!--        :before-change="tBeforeChangeIsDefault.bind(this,row.id)"-->
+    <!--    />-->
+    <!--    <template v-else>{{ row['isDefault'] }}</template>-->
     <!--  </template>-->
     <!--</el-table-column>-->
     <!--<el-table-column :label="state.dict['disabled']" width="80">-->
     <!--  <template #default="{row}">-->
     <!--    <el-switch-->
+    <!--        v-if="config.tableInlineOperate"-->
     <!--        v-model="row.disabled"-->
     <!--        :loading="switchLoadingRef"-->
     <!--        :active-value="final.DISABLED_NO"-->
     <!--        :inactive-value="final.DISABLED_YES"-->
-    <!--        :before-change="tBeforeChange.bind(this,row.id)"-->
+    <!--        :before-change="tBeforeChangeDisabled.bind(this,row.id)"-->
     <!--    />-->
+    <!--    <template v-else>{{ shift_yes_no[row['disabled']] }}</template>-->
     <!--  </template>-->
     <!--</el-table-column>-->
     <!--<el-table-column prop="createBy" :label="state.dict['createBy']" width="120"/>-->

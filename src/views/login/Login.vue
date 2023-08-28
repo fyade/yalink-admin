@@ -53,7 +53,7 @@ let login = () => {
                   @keyup.enter="login"></el-input>
       </div>
       <div class="footer">
-        <el-button v-loading="loadingRef" type="primary" @click="login">登录</el-button>
+        <el-button v-no-more-click="{interval:10}" v-loading="loadingRef" type="primary" @click="login">登录</el-button>
       </div>
     </div>
   </div>

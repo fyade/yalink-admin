@@ -1,11 +1,11 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 获取当前用户菜单列表
  * @returns {*}
  */
 export function selMenusOfCurrent() {
-  return ax({
+  return request({
     url: '/admin/sec/menu/current',
     method: 'GET'
   });
@@ -16,7 +16,7 @@ export function selMenusOfCurrent() {
  * @returns {*}
  */
 export function selAll() {
-  return ax({
+  return request({
     url: '/admin/sec/menu/nest',
     method: 'GET'
   });
@@ -33,7 +33,7 @@ export function selAll() {
  * @returns {*}
  */
 export function insOne({ parentId, name, path, auth, icon, orderNum }) {
-  return ax({
+  return request({
     url: '/admin/sec/menu',
     method: 'POST',
     data: {
@@ -59,7 +59,7 @@ export function insOne({ parentId, name, path, auth, icon, orderNum }) {
  * @returns {*}
  */
 export function altOne({ id, parentId, name, path, auth, icon, orderNum }) {
-  return ax({
+  return request({
     url: '/admin/sec/menu',
     method: 'PUT',
     data: {
@@ -80,7 +80,7 @@ export function altOne({ id, parentId, name, path, auth, icon, orderNum }) {
  * @returns {*}
  */
 export function delOne(id) {
-  return ax({
+  return request({
     url: `/admin/sec/menu/${id}`,
     method: 'DELETE'
   });

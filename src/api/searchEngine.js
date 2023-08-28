@@ -1,11 +1,11 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 获取所有
  * @returns {*}
  */
 export function selAll({ pageNum, pageSize, name, descr, url, secondLevelUrl, paramKey }) {
-  return ax({
+  return request({
     url: '/admin/search-engine',
     method: 'GET',
     params: {
@@ -26,7 +26,7 @@ export function selAll({ pageNum, pageSize, name, descr, url, secondLevelUrl, pa
  * @returns {*}
  */
 export function selOne(id) {
-  return ax({
+  return request({
     url: `/admin/search-engine/${id}`,
     method: 'GET'
   })
@@ -43,7 +43,7 @@ export function selOne(id) {
  * @returns {*}
  */
 export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum, disabled }) {
-  return ax({
+  return request({
     url: '/admin/search-engine',
     method: 'POST',
     data: {
@@ -70,7 +70,7 @@ export function insOne({ name, descr, url, secondLevelUrl, paramKey, orderNum, d
  * @returns {*}
  */
 export function updOne({ id, name, descr, url, secondLevelUrl, paramKey, orderNum, disabled }) {
-  return ax({
+  return request({
     url: '/admin/search-engine',
     method: 'PUT',
     data: {
@@ -92,7 +92,7 @@ export function updOne({ id, name, descr, url, secondLevelUrl, paramKey, orderNu
  * @returns {*}
  */
 export function updOrder(...ids) {
-  return ax({
+  return request({
     url: '/admin/search-engine/order-num',
     method: 'POST',
     data: ids
@@ -106,7 +106,7 @@ export function updOrder(...ids) {
  * @returns {*}
  */
 export function updDisabled(...objs) {
-  return ax({
+  return request({
     url: '/admin/search-engine/disabled',
     method: 'POST',
     data: objs
@@ -119,7 +119,7 @@ export function updDisabled(...objs) {
  * @returns {*}
  */
 export function delList(...ids) {
-  return ax({
+  return request({
     url: '/admin/search-engine',
     method: 'DELETE',
     data: ids

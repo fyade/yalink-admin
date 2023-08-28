@@ -3,25 +3,26 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { final, Operate, shift_yes_no } from "utils/base.js"
 import { usePageStore } from "store/page.js"
 
-export const funcTablePage = (
-    config,
-    state,
-    state2,
-    dialogFormRef,
-    filterFormRef,
-    tableLoadingRef,
-    switchLoadingRef,
-    func
-) => {
+export const funcTablePage = ({
+                                config,
+                                state,
+                                state2,
+                                dialogFormRef,
+                                dialogFormInput1Ref,
+                                filterFormRef,
+                                tableLoadingRef,
+                                switchLoadingRef,
+                                func
+                              }) => {
   /**
    * 查询
    */
   const getData = () => {
     tableLoadingRef.value = true
     state.list = []
-    let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
+    let obj = { ...usePageStore().getPage, ...state.filterForm, ...config?.selectParam }
     func.selectList(obj).then(res => {
-      if (config.pageQuery) {
+      if (!Object.keys(config).includes('pageQuery') || config?.pageQuery !== false) {
         state.list = res.data.list
         state.total = res.data.total
       } else {
@@ -60,11 +61,18 @@ export const funcTablePage = (
    * 修改
    */
   const updData = (obj = state.dialogForm) => {
+    tableLoadingRef.value = true
+    let t = true
     func.updateOne(obj).then(res => {
       if (res.code === 200) {
+        t = false
         ElMessage.success(Operate.success)
         state.dialogVisible = false
         getData()
+      }
+    }).finally(() => {
+      if (t) {
+        tableLoadingRef.value = false
       }
     })
   }
@@ -86,10 +94,16 @@ export const funcTablePage = (
    */
   const updDataDisabled = (...objs) => {
     tableLoadingRef.value = true
+    let t = true
     func.updateDisabled(...objs).then(res => {
-      getData()
+      if (res.code === 200) {
+        t = false
+        getData()
+      }
     }).finally(() => {
-      tableLoadingRef.value = false
+      if (t) {
+        tableLoadingRef.value = false
+      }
     })
   }
   /**
@@ -106,23 +120,37 @@ export const funcTablePage = (
    * 删除
    */
   const delData = (...ids) => {
+    tableLoadingRef.value = true
+    let t = true
     func.deleteList(...ids).then(res => {
       if (res.code === 200) {
+        t = false
         ElMessage.success(Operate.success)
         getData()
+      }
+    }).finally(() => {
+      if (t) {
+        tableLoadingRef.value = false
       }
     })
   }
 
   onMounted(() => {
-    if (!!!config.notGetDataOnMounted) getData()
+    if (config?.getDataOnMounted !== false) {
+      getData()
+    }
   })
-  if (!!!config.watchDialogVisible) {
+  if (config?.watchDialogVisible !== false) {
     watch(() => state.dialogVisible, (newVal) => {
-      if (newVal) {
-      } else {
-        dialogFormRef.value?.resetFields()
-      }
+      nextTick(() => {
+        if (newVal) {
+          Promise.resolve().then(() => {
+            dialogFormInput1Ref?.value?.focus()
+          })
+        } else {
+          dialogFormRef.value?.resetFields()
+        }
+      })
     })
   }
 
@@ -153,7 +181,7 @@ export const funcTablePage = (
   }
   // 筛选
   const fEnter = () => {
-    let hasValue = Object.values(state.filterForm).some(item => !!item.toString().trim())
+    const hasValue = Object.values(state.filterForm).some(item => !!item.toString().trim())
     if (hasValue) {
       fCon()
     } else {
@@ -172,6 +200,10 @@ export const funcTablePage = (
   // 重置
   const fCan = () => {
     filterFormRef.value.resetFields()
+    getData()
+  }
+  // 刷新
+  const gRefresh = () => {
     getData()
   }
   // 新增
@@ -287,7 +319,7 @@ export const funcTablePage = (
     })
   }
   // 启用/禁用
-  const tBeforeChange = id => {
+  const tBeforeChangeDisabled = id => {
     switchLoadingRef.value = true
     return new Promise((resolve, reject) => {
       updDataDisabledById(id).then(res => {
@@ -304,6 +336,16 @@ export const funcTablePage = (
         getDataById(id)
         switchLoadingRef.value = false
       })
+    })
+  }
+  // 设为默认
+  const tBeforeChangeIsDefault = id => {
+    switchLoadingRef.value = true
+    return new Promise((resolve, reject) => {
+      let obj = state.list.find(item => item.id === id)
+      obj.isDefault = shift_yes_no[obj.isDefault]
+      switchLoadingRef.value = false
+      updData(obj)
     })
   }
   const handleSelectionChange = val => {
@@ -323,12 +365,18 @@ export const funcTablePage = (
     getData()
   }
 
+  const refresh = () => {
+    getData()
+  }
+
   return {
+    refresh,
     dCan,
     dCon,
     fEnter,
     fCon,
     fCan,
+    gRefresh,
     gIns,
     gUpd,
     gDel,
@@ -339,7 +387,8 @@ export const funcTablePage = (
     gDisabledShift,
     tUpd,
     tDel,
-    tBeforeChange,
+    tBeforeChangeDisabled,
+    tBeforeChangeIsDefault,
     handleSelectionChange,
     handlerFocus,
     handleOrderNumChange,

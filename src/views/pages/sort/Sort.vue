@@ -2,9 +2,9 @@
 import { nextTick, reactive, ref, watch } from "vue"
 import { cascaderProps2, final, Operate, publicDict, shift_yes_no } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
-import { funcTablePage } from "@/composition/template/tablePage/index.js"
+import { funcTablePage } from "@/composition/tablePage/tablePage.js"
 import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminSort.js'
-import { flatObjectArray } from "utils/dataUtils.js";
+import { flatObjectArray } from "utils/data-util.js";
 import { ElMessage } from "element-plus";
 import { usePageStore } from "store/page.js";
 
@@ -15,12 +15,6 @@ let state = reactive({
     label: ''
   },
   // 这个是弹出框表单
-  // 格式: {
-  //   id: '',
-  //   disabled: final.DISABLED_NO,
-  //   parentId: final.DEFAULT_PARENT_ID,
-  //   ...
-  // }
   dialogForm: {
     id: '',
     name: '',
@@ -30,19 +24,10 @@ let state = reactive({
     disabled: final.DISABLED_NO
   },
   // 这个是弹出框表单校验
-  // 格式: {
-  //   name: [{ required: true }],
-  //   ...
-  // }
   dFormRules: {
     name: [{ required: true }]
   },
   // 字典
-  // 格式: {
-  //   ...publicDict,
-  //   name: '名字',
-  //   ...
-  // }
   dict: {
     ...publicDict,
     name: '分类名',
@@ -50,10 +35,6 @@ let state = reactive({
     parentId: '父级分类'
   },
   // 筛选表单
-  // 格式: {
-  //   name: '',
-  //   ...
-  // }
   filterForm: {},
   list: [],
   allList: [],
@@ -68,6 +49,7 @@ let filterFormRef = ref(null)
 let tableLoadingRef = ref(false)
 let switchLoadingRef = ref(false)
 let config = {
+  pageQuery: false, // 分页，默认true
 }
 
 const func = {
@@ -123,9 +105,14 @@ const func = {
 }
 
 watch(() => state.list, () => {
-  state.allList = flatObjectArray(state.list)
-})
+      state.allList = flatObjectArray(state.list)
+    }
+)
 
+const gIns2 = () => {
+  state.dialogForm.parentId = ''
+  gIns()
+}
 const tAdd = id => {
   state.type.value = 'ins'
   state.type.label = '新增'
@@ -143,7 +130,7 @@ const tUpd = id => {
     })
   })
 }
-const tBeforeChange = id => {
+const tBeforeChangeDisabled = id => {
   switchLoadingRef.value = true
   return new Promise((resolve, reject) => {
     let obj = state.allList.find(item => item.id === id)
@@ -194,21 +181,22 @@ const {
   fEnter,
   fCon,
   fCan,
+  gRefresh,
   gIns,
   tDel,
   handleSelectionChange,
   handlerFocus,
   pageChange
-} = funcTablePage(
-    config,
-    state,
-    state2,
-    dialogFormRef,
-    filterFormRef,
-    tableLoadingRef,
-    switchLoadingRef,
-    func
-)
+} = funcTablePage({
+  config,
+  state,
+  state2,
+  dialogFormRef,
+  filterFormRef,
+  tableLoadingRef,
+  switchLoadingRef,
+  func
+})
 </script>
 
 <template>
@@ -246,9 +234,6 @@ const {
             :props="cascaderProps2"
         />
       </el-form-item>
-      <!--<el-form-item :label="state.dict['']" prop="">-->
-      <!--  <el-input v-model="state.dialogForm."/>-->
-      <!--</el-form-item>-->
       <!--在此上方添加表单项-->
       <el-form-item :label="state.dict['disabled']" prop="disabled">
         <el-switch v-model="state.dialogForm['disabled']" :active-value="final.DISABLED_NO"
@@ -273,11 +258,6 @@ const {
       :inline="true"
       @keyup.enter="fEnter"
   >
-    <!--在此下方添加表单项-->
-    <!--<el-form-item :label="state.dict['']" prop="">-->
-    <!--  <el-input v-model="state.filterForm['']" :placeholder="state.dict['']"/>-->
-    <!--</el-form-item>-->
-    <!--在此上方添加表单项-->
     <el-form-item>
       <el-button v-no-more-click type="primary" @click="fCon">筛选</el-button>
       <el-button v-no-more-click @click="fCan">重置</el-button>
@@ -287,25 +267,9 @@ const {
   <!--操作按钮-->
   <div style="display: flex;flex-wrap: wrap;gap: 1rem;">
     <el-button-group>
-      <el-button v-no-more-click type="primary" plain @click="gIns">新增</el-button>
-      <!--<el-button v-no-more-click type="success" plain :disabled="state.multipleSelection.length!==1" @click="gUpd">修改-->
-      <!--</el-button>-->
-      <!--<el-button v-no-more-click type="danger" plain :disabled="state.multipleSelection.length===0" @click="gDel">删除-->
-      <!--</el-button>-->
+      <el-button v-no-more-click plain @click="gRefresh">刷新</el-button>
+      <el-button v-no-more-click type="primary" plain @click="gIns2">新增</el-button>
     </el-button-group>
-    <!--<el-button-group>-->
-    <!--<el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveUp">上移</el-button>-->
-    <!--<el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gMoveDown">下移-->
-    <!--</el-button>-->
-    <!--</el-button-group>-->
-    <!--<el-button-group>-->
-    <!--  <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledToNo">启用-->
-    <!--  </el-button>-->
-    <!--  <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledToYes">禁用-->
-    <!--  </el-button>-->
-    <!--  <el-button v-no-more-click plain :disabled="state.multipleSelection.length===0" @click="gDisabledShift">切换-->
-    <!--  </el-button>-->
-    <!--</el-button-group>-->
   </div>
 
   <!--数据表格-->
@@ -342,7 +306,7 @@ const {
             :loading="switchLoadingRef"
             :active-value="final.DISABLED_NO"
             :inactive-value="final.DISABLED_YES"
-            :before-change="tBeforeChange.bind(this,row.id)"
+            :before-change="tBeforeChangeDisabled.bind(this,row.id)"
         />
       </template>
     </el-table-column>

@@ -9,7 +9,9 @@ export const PAGINATION = {
 
 export const publicDict = {
   id: '主键id',
+  remark: '备注',
   orderNum: '顺序',
+  isDefault: '是否默认',
   disabled: '是否启用',
   createBy: 'createBy',
   updateBy: 'updateBy',
@@ -17,10 +19,15 @@ export const publicDict = {
   updateTime: 'updateTime',
   deleted: '逻辑删除'
 }
+
+const Y = 'Y'
+const N = 'N'
 export const final = {
-  DISABLED_YES: '1',
-  DISABLED_NO: '0',
-  DEFAULT_PARENT_ID: '0'
+  DEFAULT_PARENT_ID: '0',
+  DISABLED_YES: Y,
+  DISABLED_NO: N,
+  IS_DEFAULT_YES: Y,
+  IS_DEFAULT_NO: N
 }
 
 export const publicCascaderProps = {
@@ -29,10 +36,14 @@ export const publicCascaderProps = {
   disabled: 'casDisbaled'
 }
 // 只能选择最子层
-export const cascaderProps1 = {
-  ...publicCascaderProps,
+export const cascaderProps3 = {
+  disabled: 'casDisbaled',
   expandTrigger: 'hover',
   emitPath: false // 在选中节点改变时，是否返回由该节点所在的各级菜单的值所组成的数组，若设置 false，则只返回该节点的值
+}
+export const cascaderProps1 = {
+  ...publicCascaderProps,
+  ...cascaderProps3
 }
 // 可以选择任何层
 export const cascaderProps2 = {
@@ -47,6 +58,6 @@ export const Operate = {
 }
 
 export const shift_yes_no = {
-  '1': '0',
-  '0': '1'
+  Y: N,
+  N: Y
 }

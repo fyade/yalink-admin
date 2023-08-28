@@ -2,7 +2,7 @@
 import { nextTick, onMounted, reactive, ref, watch } from "vue"
 import { cascaderProps1, final, publicDict } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
-import { funcTablePage } from "@/composition/template/tablePage/index.js"
+import { funcTablePage } from "@/composition/tablePage/tablePage.js"
 import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminLink.js'
 import { usePageStore } from "store/page.js";
 
@@ -13,12 +13,6 @@ let state = reactive({
     label: ''
   },
   // 这个是弹出框表单
-  // 格式: {
-  //   id: '',
-  //   disabled: final.DISABLED_NO,
-  //   parentId: final.DEFAULT_PARENT_ID,
-  //   ...
-  // }
   dialogForm: {
     id: '',
     name: '',
@@ -32,21 +26,12 @@ let state = reactive({
     disabled: final.DISABLED_NO
   },
   // 这个是弹出框表单校验
-  // 格式: {
-  //   name: [{ required: true }],
-  //   ...
-  // }
   dFormRules: {
     name: [{ required: true }],
     url: [{ required: true }],
     sortId: [{ required: true }]
   },
   // 字典
-  // 格式: {
-  //   ...publicDict,
-  //   name: '名字',
-  //   ...
-  // }
   dict: {
     ...publicDict,
     name: '链接名',
@@ -58,10 +43,6 @@ let state = reactive({
     sortId: '父分类'
   },
   // 筛选表单
-  // 格式: {
-  //   name: '',
-  //   ...
-  // }
   filterForm: {
     name: '',
     descr: '',
@@ -84,9 +65,6 @@ let config = reactive({
   selectParam: {
     sortId: ''
   }, // 查询参数（补充
-  notGetDataOnMounted: true, // 页面加载时不获取数据，默认false
-  pageQuery: true, // 是否分页，默认false
-  watchDialogVisible: false // 监听dialogVisible变化，默认true
 })
 
 let props = defineProps({
@@ -115,19 +93,20 @@ onMounted(() => {
   getData()
 })
 const getData = () => {
-  tableLoadingRef.value = true
-  state.list = []
-  let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
-  func.selectList(obj).then(res => {
-    if (config.pageQuery) {
-      state.list = res.data.list
-      state.total = res.data.total
-    } else {
-      state.list = res.data
-    }
-  }).finally(() => {
-    tableLoadingRef.value = false
-  })
+  // tableLoadingRef.value = true
+  // state.list = []
+  // let obj = { ...usePageStore().getPage, ...state.filterForm, ...config.selectParam }
+  // func.selectList(obj).then(res => {
+  //   if (config.pageQuery) {
+  //     state.list = res.data.list
+  //     state.total = res.data.total
+  //   } else {
+  //     state.list = res.data
+  //   }
+  // }).finally(() => {
+  //   tableLoadingRef.value = false
+  // })
+  gRefresh()
 }
 
 const func = {
@@ -183,7 +162,6 @@ const func = {
 }
 
 const handleChange = (value) => {
-  // console.log(value)
 }
 
 const {
@@ -191,6 +169,7 @@ const {
   dCon,
   fCon,
   fCan,
+  gRefresh,
   gIns,
   gUpd,
   gDel,
@@ -201,21 +180,21 @@ const {
   gDisabledShift,
   tUpd,
   tDel,
-  tBeforeChange,
+  tBeforeChangeDisabled,
   handleSelectionChange,
   handlerFocus,
   handleOrderNumChange,
   pageChange
-} = funcTablePage(
-    config,
-    state,
-    state2,
-    dialogFormRef,
-    filterFormRef,
-    tableLoadingRef,
-    switchLoadingRef,
-    func
-)
+} = funcTablePage({
+  config,
+  state,
+  state2,
+  dialogFormRef,
+  filterFormRef,
+  tableLoadingRef,
+  switchLoadingRef,
+  func
+})
 </script>
 
 <template>
@@ -315,6 +294,7 @@ const {
   <!--操作按钮-->
   <div style="display: flex;flex-wrap: wrap;gap: 1rem;">
     <el-button-group>
+      <el-button v-no-more-click plain @click="gRefresh">刷新</el-button>
       <el-button v-no-more-click type="primary" plain @click="gIns">新增</el-button>
       <el-button v-no-more-click type="success" plain :disabled="state.multipleSelection.length!==1" @click="gUpd">修改
       </el-button>
@@ -376,7 +356,7 @@ const {
             :loading="switchLoadingRef"
             :active-value="final.DISABLED_NO"
             :inactive-value="final.DISABLED_YES"
-            :before-change="tBeforeChange.bind(this,row.id)"
+            :before-change="tBeforeChangeDisabled.bind(this,row.id)"
         />
       </template>
     </el-table-column>

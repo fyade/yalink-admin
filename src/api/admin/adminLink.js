@@ -1,4 +1,4 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 根据分类获取链接列表
@@ -6,7 +6,7 @@ import ax from 'utils/request.js';
  * @returns {*}
  */
 export function selLinkBySortId(sortId) {
-  return ax({
+  return request({
     url: '/admin/link/s',
     method: 'GET',
     params: {
@@ -28,7 +28,7 @@ export function selLinkBySortId(sortId) {
  * @returns {*}
  */
 export function selList({ pageNum, pageSize, name, descr, url, docUrl, siteSearch, sortId }) {
-  return ax({
+  return request({
     url: '/admin/link',
     method: 'GET',
     params: {
@@ -50,7 +50,7 @@ export function selList({ pageNum, pageSize, name, descr, url, docUrl, siteSearc
  * @returns {*}
  */
 export function selOne(id) {
-  return ax({
+  return request({
     url: `/admin/link/${id}`,
     method: 'GET'
   })
@@ -70,7 +70,7 @@ export function selOne(id) {
  * @returns {*}
  */
 export function insOne({ name, descr, ico, url, docUrl, siteSearch, orderNum, sortId, disabled }) {
-  return ax({
+  return request({
     url: '/admin/link',
     method: 'POST',
     data: {
@@ -102,7 +102,7 @@ export function insOne({ name, descr, ico, url, docUrl, siteSearch, orderNum, so
  * @returns {*}
  */
 export function updOne({ id, name, descr, ico, url, docUrl, siteSearch, orderNum, sortId, disabled }) {
-  return ax({
+  return request({
     url: '/admin/link',
     method: 'PUT',
     data: {
@@ -126,7 +126,7 @@ export function updOne({ id, name, descr, ico, url, docUrl, siteSearch, orderNum
  * @returns {*}
  */
 export function updOrder(...ids) {
-  return ax({
+  return request({
     url: '/admin/link/order-num',
     method: 'POST',
     data: ids
@@ -139,7 +139,7 @@ export function updOrder(...ids) {
  * @returns {*}
  */
 export function updDisabled(...objs) {
-  return ax({
+  return request({
     url: '/admin/link/disabled',
     method: 'POST',
     data: objs
@@ -152,7 +152,7 @@ export function updDisabled(...objs) {
  * @returns {*}
  */
 export function delList(...ids) {
-  return ax({
+  return request({
     url: '/admin/link',
     method: 'DELETE',
     data: ids

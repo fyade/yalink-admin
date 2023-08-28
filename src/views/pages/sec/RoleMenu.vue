@@ -5,8 +5,9 @@ import { selRole } from 'api/sec/secRole.js';
 import { onMounted, reactive, ref, watch } from 'vue';
 import useStore from 'store';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { deepRecursion, flatObjectArray } from 'utils/dataUtils.js';
+import { deepRecursion, flatObjectArray } from 'utils/data-util.js';
 import Pagination from 'comp/pagination/Pagination.vue';
+import { final } from "utils/base.js";
 
 const store = useStore();
 onMounted(() => {
@@ -84,7 +85,7 @@ let diaCan = () => {
 }
 let diaCon_ = (arr, item, arr2) => {
   let me = infoRea.menuList_f.find(iitem => iitem.id === item);
-  if (!!me && me.parentId !== '0') {
+  if (!!me && me.parentId !== final.DEFAULT_PARENT_ID) {
     arr2.push(me.parentId);
     diaCon_(arr, me.parentId, arr2);
   }

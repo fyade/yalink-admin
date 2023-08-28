@@ -1,11 +1,11 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 
 /**
  * 获取角色列表
  * @returns {*}
  */
 export function selRole() {
-  return ax({
+  return request({
     url: '/admin/sec/role',
     method: 'GET'
   });
@@ -18,7 +18,7 @@ export function selRole() {
  * @returns {*}
  */
 export function insRole({ code, name }) {
-  return ax({
+  return request({
     url: '/admin/sec/role',
     method: 'POST',
     data: {
@@ -36,7 +36,7 @@ export function insRole({ code, name }) {
  * @returns {*}
  */
 export function altRole({ id, code, name }) {
-  return ax({
+  return request({
     url: '/admin/sec/role',
     method: 'PUT',
     data: {
@@ -53,7 +53,7 @@ export function altRole({ id, code, name }) {
  * @returns {*}
  */
 export function delRole(id) {
-  return ax({
+  return request({
     url: `/admin/sec/role/${id}`,
     method: 'DELETE'
   });

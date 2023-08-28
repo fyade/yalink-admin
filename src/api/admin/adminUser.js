@@ -1,4 +1,4 @@
-import ax from 'utils/request.js';
+import request from 'utils/request.js';
 import useStore from 'store';
 
 const store = useStore();
@@ -10,7 +10,7 @@ const store = useStore();
  * @returns {*}
  */
 export function selUserPage({ pageNum, pageSize }) {
-  return ax({
+  return request({
     url: '/admin/user/u',
     method: 'GET',
     params: {
@@ -34,7 +34,7 @@ export function selUserPage({ pageNum, pageSize }) {
  * @returns {*}
  */
 export function insOneUser({ username, password, nickname, realname, avatar, tel, email, sex, birth }) {
-  return ax({
+  return request({
     url: '/admin/user/u',
     method: 'POST',
     data: {
@@ -66,7 +66,7 @@ export function insOneUser({ username, password, nickname, realname, avatar, tel
  * @returns {*}
  */
 export function updOneUser({ id, username, password, nickname, realname, avatar, tel, email, sex, birth }) {
-  return ax({
+  return request({
     url: '/admin/user/u',
     method: 'PUT',
     data: {
@@ -90,7 +90,7 @@ export function updOneUser({ id, username, password, nickname, realname, avatar,
  * @returns {*}
  */
 export function delOneUser(id) {
-  return ax({
+  return request({
     url: `/admin/user/u/${id}`,
     method: 'DELETE'
   });
@@ -110,7 +110,7 @@ export function selUserLoginLog(userId, status, descr, pageNum = store.page.page
   if (!!userId) data.userId = userId;
   if (!!status) data.status = status;
   if (!!descr) data.descr = descr;
-  return ax({
+  return request({
     url: '/admin/user/select-login-log',
     method: 'POST',
     data: data
