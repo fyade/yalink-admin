@@ -1,9 +1,9 @@
 <script setup>
 import { nextTick, reactive, ref, watch } from "vue"
-import { cascaderProps1, cascaderProps3, final, publicDict, shift_yes_no } from "utils/base.js"
+import { cascaderProps1, cascaderProps3, final, publicDict } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
 import { funcTablePage } from "@/composition/tablePage/tablePage.js"
-import { getList, updateStatusToReject, updateStatusToResolve } from "api/admin/adminLinkApply.js";
+import { delList, getList, updateStatusToReject, updateStatusToResolve } from "api/admin/adminLinkApply.js";
 import { getDictData } from "api/common.js";
 import { selList as selSortList } from "api/admin/adminSort.js";
 import { ElMessage } from "element-plus";
@@ -209,7 +209,7 @@ const func = {
    * @param ids
    */
   deleteList: (...ids) => {
-    // return func(...ids)
+    return delList(...ids)
   }
 }
 
@@ -517,9 +517,9 @@ const dConReject = () => {
       <!--<el-button v-no-more-click="{disabled:state.multipleSelection.length!==1}" type="success" plain-->
       <!--           :disabled="state.multipleSelection.length!==1" @click="gUpd">修改-->
       <!--</el-button>-->
-      <!--<el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" type="danger" plain-->
-      <!--           :disabled="state.multipleSelection.length===0" @click="gDel">删除-->
-      <!--</el-button>-->
+      <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" type="danger" plain
+                 :disabled="state.multipleSelection.length===0" @click="gDel">删除
+      </el-button>
     </el-button-group>
     <!--<el-button-group>-->
     <!--  <el-button v-no-more-click="{disabled:state.multipleSelection.length===0}" plain-->
@@ -549,7 +549,7 @@ const dConReject = () => {
       :data="state.list"
       @selection-change="handleSelectionChange"
   >
-    <!--<el-table-column fixed type="selection" width="55"/>-->
+    <el-table-column fixed type="selection" width="55"/>
     <el-table-column fixed prop="id" :label="state.dict['id']" width="180"/>
     <!--上面id列的宽度改一下-->
     <!--在此下方添加表格列-->
@@ -641,7 +641,7 @@ const dConReject = () => {
         <el-button v-no-more-click link type="primary" size="small" @click="tUpd2(row.id)">
           {{ row.status === '1' ? '审核' : '详情' }}
         </el-button>
-        <!--<el-button v-no-more-click link type="danger" size="small" @click="tDel(row.id)">删除</el-button>-->
+        <el-button v-no-more-click link type="danger" size="small" @click="tDel(row.id)">删除</el-button>
       </template>
     </el-table-column>
     <!--<template #append>-->

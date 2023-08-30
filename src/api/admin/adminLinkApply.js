@@ -104,3 +104,16 @@ export function updateStatusToReject({ id, msg }) {
     }
   })
 }
+
+/**
+ * 删除收录申请
+ * @param ids
+ * @returns {*}
+ */
+export function delList(...ids) {
+  return request({
+    url: '/admin/link-apply',
+    method: 'DELETE',
+    data: ids
+  })
+}
