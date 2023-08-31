@@ -51,7 +51,7 @@ defineProps({
 
   > .content {
     margin-top: 8px;
-    height: 300px;
+    min-height: 200px;
 
     :deep(> *) {
       width: 100%;

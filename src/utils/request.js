@@ -61,7 +61,14 @@ export default request
 
 let timers = {}
 
-export function cyclicRequest({ func, interval = 3000, resolve, reject, final, callback }) {
+export function cyclicRequest({
+                                func,
+                                interval = 3000,
+                                resolve,
+                                reject,
+                                final,
+                                callback
+                              }) {
   let id
   do {
     id = generate10StringWithTimestamp()
@@ -79,6 +86,8 @@ export function cyclicRequest({ func, interval = 3000, resolve, reject, final, c
   return id
 }
 
-export function breakCyclicRequest(id) {
-  clearInterval(timers[id])
+export function breakCyclicRequest(...ids) {
+  for (let id of ids) {
+    clearInterval(timers[id])
+  }
 }

@@ -1,32 +1,26 @@
 <script setup>
+import { getCPUInfo } from "api/admin/System.js";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { breakCyclicRequest, cyclicRequest } from "utils/request.js";
-import { getMemoryInfo } from "api/admin/System.js";
+import Doughnut from "comp/chart/Doughnut.vue";
+import { strToNum } from "utils/rate-util.js";
 
-let state = reactive({
+const state = reactive({
   info: {
-    maxMemory: '-',
-    totalMemory: '-',
-    usedMemory: '-',
-    freeMemory: '-',
-    usageRate: '-'
+    coreCount: '-',
+    threadCount: '-',
+    cpuUsage: '-'
   },
-  dict: {
-    maxMemory: '最大可用内存',
-    totalMemory: '已申请内存',
-    usedMemory: '已用内存',
-    freeMemory: '空余内存',
-    usageRate: '使用率'
-  }
+  dict: {}
 })
-let loadingRef = ref(false)
+const loadingRef = ref(false)
 let eventId = ''
 
 onMounted(() => {
   loadingRef.value = true
   eventId = cyclicRequest({
-    func: getMemoryInfo,
-    interval: 2000,
+    func: getCPUInfo,
+    interval: 1000,
     resolve: res => {
       const data = res.data
       Object.keys(state.info).forEach(item => {
@@ -44,9 +38,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-
+  <Doughnut
+      title="CPU状态（此程序CPU占用资源/电脑总CPU资源）"
+      :percent="strToNum(state.info.cpuUsage)"
+      doughnut-color="#3e93c5"
+      doughnut-bg-color="#d9e7f1"
+  />
 </template>
 
 <style scoped lang="scss">
-
 </style>

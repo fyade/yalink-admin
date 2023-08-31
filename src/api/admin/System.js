@@ -12,6 +12,17 @@ export function getSystemInfo() {
 }
 
 /**
+ * 获取CPU状态
+ * @returns {*}
+ */
+export function getCPUInfo() {
+  return request({
+    url: '/admin/home/cpu',
+    method: 'GET'
+  })
+}
+
+/**
  * 获取内存信息
  * @returns {*}
  */

@@ -62,7 +62,6 @@ onBeforeUnmount(() => {
   gap: 16px;
 
   > * {
-    height: 30px;
     line-height: 30px;
   }
 
