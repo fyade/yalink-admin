@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUpdated, reactive, ref, toRaw, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useMenuStore } from 'store/menu.js'
+import { useMenuStore } from 'store/module/menu.js'
 
 const route = useRoute()
 const router = useRouter()

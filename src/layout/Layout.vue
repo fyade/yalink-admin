@@ -1,5 +1,7 @@
 <script setup>
 import LeftMenu from '@/layout/menu/LeftMenu.vue';
+import Index from "@/layout/header/Index.vue";
+import { useTagsViewStore } from "store/module/tagsView.js";
 </script>
 
 <template>
@@ -9,8 +11,16 @@ import LeftMenu from '@/layout/menu/LeftMenu.vue';
         <LeftMenu/>
       </el-aside>
       <el-container>
+        <el-header :style="{
+          borderBottom: '1px solid #eee',
+          boxShadow: '0 2px 12px 3px #eee'
+        }">
+          <Index/>
+        </el-header>
         <el-main>
+          <!--<KeepAlive :include="useTagsViewStore().state.list">-->
           <router-view/>
+          <!--</KeepAlive>-->
         </el-main>
       </el-container>
     </el-container>

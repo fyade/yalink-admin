@@ -39,7 +39,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Doughnut
-      title="CPU状态（此程序CPU占用资源/电脑总CPU资源）"
+      title="CPU状态"
       :percent="strToNum(state.info.cpuUsage)"
       doughnut-color="#3e93c5"
       doughnut-bg-color="#d9e7f1"

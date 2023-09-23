@@ -6,7 +6,7 @@ import { funcTablePage } from "@/composition/tablePage/tablePage.js"
 import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminSort.js'
 import { flatObjectArray } from "utils/data-util.js";
 import { ElMessage } from "element-plus";
-import { usePageStore } from "store/page.js";
+import { usePageStore } from "store/module/page.js";
 
 let state = reactive({
   dialogVisible: false,

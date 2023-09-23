@@ -43,3 +43,36 @@ export function getDiskInfo() {
     method: 'GET'
   })
 }
+
+/**
+ * 获取基本信息
+ * @returns {*}
+ */
+export function getNumsInfo() {
+  return request({
+    url: '/admin/home/nums',
+    method: 'GET'
+  })
+}
+
+/**
+ * 分类总览（7天）
+ * @returns {*}
+ */
+export function getSortOfWeek() {
+  return request({
+    url: '/admin/home/sort/week',
+    method: 'GET'
+  })
+}
+
+/**
+ * 链接总览（7天）
+ * @returns {*}
+ */
+export function getLinkOfWeek() {
+  return request({
+    url: '/admin/home/link/week',
+    method: 'GET'
+  })
+}

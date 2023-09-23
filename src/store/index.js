@@ -1,11 +1,13 @@
-import { usePageStore } from 'store/page.js';
-import { useUserStore } from 'store/user.js';
-import { useMenuStore } from 'store/menu.js';
+import { useMenuStore } from 'store/module/menu.js';
+import { usePageStore } from 'store/module/page.js';
+import { useTagsViewStore } from "store/module/tagsView.js";
+import { useUserStore } from 'store/module/user.js';
 
 export default function useStore() {
   return {
+    menu: useMenuStore(),
     page: usePageStore(),
-    user: useUserStore(),
-    menu: useMenuStore()
+    tagsView: useTagsViewStore(),
+    user: useUserStore()
   }
 }

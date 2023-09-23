@@ -1,7 +1,7 @@
 import { nextTick, onMounted, watch } from "vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { final, Operate, shift_yes_no } from "utils/base.js"
-import { usePageStore } from "store/page.js"
+import { usePageStore } from "store/module/page.js"
 
 export const funcTablePage = ({
                                 config,

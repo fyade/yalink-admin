@@ -4,7 +4,7 @@ import { cascaderProps1, final, publicDict } from "utils/base.js"
 import Pagination from "comp/pagination/Pagination.vue"
 import { funcTablePage } from "@/composition/tablePage/tablePage.js"
 import { selList, selOne, insOne, updOne, updOrder, updDisabled, delList } from 'api/admin/adminLink.js'
-import { usePageStore } from "store/page.js";
+import { usePageStore } from "store/module/page.js";
 
 let state = reactive({
   dialogVisible: false,

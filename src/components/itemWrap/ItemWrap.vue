@@ -50,10 +50,12 @@ defineProps({
   }
 
   > .content {
+    position: relative;
     margin-top: 8px;
     min-height: 200px;
 
     :deep(> *) {
+      position: absolute;
       width: 100%;
       height: 100%;
     }

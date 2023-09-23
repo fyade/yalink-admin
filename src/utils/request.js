@@ -4,7 +4,7 @@ import useStore from 'store'
 import { generate10StringWithTimestamp } from "utils/random-util.js";
 import { useRoute, useRouter } from "vue-router";
 import router from "@/router/index.js";
-import { useUserStore } from "store/user.js";
+import { useUserStore } from "store/module/user.js";
 
 let request = axios.create()
 request.defaults.baseURL = import.meta.env.VITE_APP_REQ_PREFIX

@@ -8,6 +8,7 @@ const props = defineProps({
     required: true
   }
 })
+const theme = {}
 const el = ref(null)
 let chart = null
 
@@ -22,7 +23,7 @@ const init = () => {
     return
   }
   echarts.dispose(el.value)
-  chart = echarts.init(el.value);
+  chart = echarts.init(el.value, theme);
   chart.setOption(props.option);
 }
 </script>

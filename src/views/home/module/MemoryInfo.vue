@@ -47,7 +47,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Doughnut
-      title="内存状态（此程序已使用内存/此程序申请到的总内存）"
+      title="内存状态"
       :percent="strToNum(state.info.usageRate)"
       doughnut-color="#982eb6"
       doughnut-bg-color="#f4f2f4"
