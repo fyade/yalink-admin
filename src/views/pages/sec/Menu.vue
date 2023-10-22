@@ -196,7 +196,7 @@ let tblDel = id => {
         {{ infoRea.menuList.find(item => item.id === scope.row.parentId)?.path }}{{ scope.row.path }}
       </template>
     </el-table-column>
-    <el-table-column prop="auth" label="权限" width="120"/>
+    <el-table-column prop="auth" label="权限" width="280"/>
     <el-table-column prop="icon" label="图标" width="120"/>
     <el-table-column prop="orderNum" label="排序" width="120"/>
     <el-table-column prop="createBy" label="create_by" width="120"/>

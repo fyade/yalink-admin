@@ -52,18 +52,18 @@ const routes = [
         path: 'dict',
         component: () => import('views/pages/dict/Dict.vue')
       },
-      {
-        path: 'user/user',
-        component: () => import('views/pages/user/User.vue')
-      },
-      {
-        path: 'user/loginlog',
-        component: () => import('views/pages/user/LoginLog.vue')
-      },
-      {
-        path: 'file/upload',
-        component: () => import('views/pages/file/Upload.vue')
-      }
+      // {
+      //   path: 'user/user',
+      //   component: () => import('views/pages/user/User.vue')
+      // },
+      // {
+      //   path: 'user/loginlog',
+      //   component: () => import('views/pages/user/LoginLog.vue')
+      // },
+      // {
+      //   path: 'file/upload',
+      //   component: () => import('views/pages/file/Upload.vue')
+      // }
     ]
   },
   {
